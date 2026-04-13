@@ -12,11 +12,13 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.1.5",
     "idb": "^8.0.3",
     "jspdf": "^4.2.1",
     "qrcode": "^1.5.4",
-    "svg2pdf.js": "^2.7.0"
+    "svg2pdf.js": "^2.7.0",
+    "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
     "@types/qrcode": "^1.5.6"
