@@ -1,4 +1,5 @@
 import { createEmptyPlant, type PlantData } from './types';
+import { isSourceEnabled } from './settings';
 
 export interface SearchResult {
   latinName: string;
@@ -13,10 +14,10 @@ let activeController: AbortController | null = null;
 /**
  * Search for plants via Wikidata MediaWiki API (CirrusSearch).
  * Uses haswbstatement:P225 to filter for taxa (items with a taxon name).
- * Much faster than SPARQL for live autocomplete.
  */
 export async function searchPlants(query: string): Promise<SearchResult[]> {
   if (!query || query.length < 2) return [];
+  if (!isSourceEnabled('wikidata')) return [];
 
   // Cancel any in-flight request
   if (activeController) activeController.abort();
@@ -78,7 +79,6 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
 
 /**
  * Fetch detailed plant data from Wikidata for a specific entity.
- * Uses the REST API (wbgetentities) instead of SPARQL for speed.
  */
 export async function fetchPlantDetails(wikidataId: string): Promise<Partial<PlantData>> {
   const url = new URL('https://www.wikidata.org/w/api.php');
@@ -108,22 +108,18 @@ export async function fetchPlantDetails(wikidataId: string): Promise<Partial<Pla
   if (labelDe) result.commonName = labelDe;
   else if (labelEn) result.commonName = labelEn;
 
-  // P18 = image (value is a filename on Wikimedia Commons)
   const imageName = claim('P18');
   if (imageName) {
     const encoded = encodeURIComponent(imageName.replace(/ /g, '_'));
     result.imageUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encoded}?width=400`;
   }
 
-  // P2044 = elevation/height, P2048 = height (for organisms)
   const height = claim('P2048') || claim('P2044');
   if (height?.amount) result.heightM = parseFloat(height.amount);
 
-  // P2043 = length/width
   const width = claim('P2043');
   if (width?.amount) result.widthM = parseFloat(width.amount);
 
-  // P1088 = USDA hardiness zone
   const hardiness = claim('P1088');
   if (hardiness) result.climateZone = typeof hardiness === 'string' ? hardiness : String(hardiness);
 
@@ -131,20 +127,78 @@ export async function fetchPlantDetails(wikidataId: string): Promise<Partial<Pla
 }
 
 /**
- * Search + fetch: find a plant and create a pre-filled PlantData object.
+ * Fetch enrichment data from PFAF + NaturaDB via the Netlify proxy function.
+ * Returns partial PlantData with all the fields that the proxy could parse.
+ */
+export async function fetchProxyData(latinName: string): Promise<Partial<PlantData>> {
+  const enabledPfaf = isSourceEnabled('pfaf');
+  const enabledNatura = isSourceEnabled('naturadb');
+  if (!enabledPfaf && !enabledNatura) return {};
+
+  const proxyUrl = `/.netlify/functions/plant-proxy?name=${encodeURIComponent(latinName)}`;
+  try {
+    const res = await fetch(proxyUrl);
+    if (!res.ok) return {};
+    const data = await res.json();
+
+    const result: Partial<PlantData> = {};
+    // Map proxy response fields to PlantData
+    const directFields = [
+      'commonName', 'heightM', 'widthM', 'climateZone',
+      'eatableScore', 'medsScore', 'materialScore',
+      'eatable', 'culinaric', 'meds', 'material', 'fodder', 'fuel',
+      'nitrogenFix', 'mineralFix', 'groundCover', 'insects', 'pest',
+      'animalProtection', 'windBreaking', 'windBreakingOnSea',
+      'sunFull', 'sunMid', 'sunShadow',
+      'waterDry', 'waterMid', 'waterWet', 'waterPlant',
+      'growSpeedLow', 'growSpeedMid', 'growSpeedHigh',
+      'phVeryAcid', 'phAcid', 'phNeutral',
+      'phAlkaline', 'phVeryAlkaline', 'phSaline',
+    ] as const;
+
+    for (const f of directFields) {
+      if (data[f] !== null && data[f] !== undefined && data[f] !== '' && data[f] !== false) {
+        (result as any)[f] = data[f];
+      }
+    }
+
+    if (data.fruitMonths?.some((v: boolean) => v)) result.fruitMonths = data.fruitMonths;
+    if (data.flowerMonths?.some((v: boolean) => v)) result.flowerMonths = data.flowerMonths;
+
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Import a plant from search: Wikidata first, then enrich with PFAF/NaturaDB proxy.
  */
 export async function importPlantFromSearch(result: SearchResult): Promise<PlantData> {
   const plant = createEmptyPlant();
   plant.latinName = result.latinName;
   plant.commonName = result.commonName;
 
-  if (result.wikidataId) {
+  // Wikidata details (image, dimensions)
+  if (result.wikidataId && isSourceEnabled('wikidata')) {
     const details = await fetchPlantDetails(result.wikidataId);
     Object.assign(plant, details);
-    // Keep the generated ID
-    plant.id = crypto.randomUUID();
   }
 
+  // PFAF + NaturaDB enrichment via proxy
+  if (plant.latinName && (isSourceEnabled('pfaf') || isSourceEnabled('naturadb'))) {
+    const proxyData = await fetchProxyData(plant.latinName);
+    // Only fill empty fields — don't overwrite Wikidata data
+    for (const [key, value] of Object.entries(proxyData)) {
+      const current = (plant as any)[key];
+      const isEmpty = current === null || current === undefined || current === '' || current === false ||
+        (Array.isArray(current) && current.every((v: boolean) => !v));
+      if (isEmpty) {
+        (plant as any)[key] = value;
+      }
+    }
+  }
+
+  plant.id = crypto.randomUUID();
   return plant;
 }
-
