@@ -80,6 +80,29 @@ Da Pflanzendaten aus mehreren Quellen aggregiert werden (Wikidata → PFAF → N
 
 ## Langfristig
 
+### PocketBase als Server-Backend (Option)
+
+Aktuell speichert die App alle Daten lokal im Browser (IndexedDB). PFAF/NaturaDB-Abfragen laufen über eine Netlify Serverless Function als CORS-Proxy.
+
+Ein Wechsel zu **PocketBase** (selbst-gehostetes Open-Source-Backend, SQLite + REST + Realtime) würde folgende Use Cases ermöglichen:
+
+| Use Case | Jetzt (PWA + Netlify) | Mit PocketBase |
+|---|---|---|
+| Datenspeicher | IndexedDB, pro Browser | SQLite auf eigenem Server |
+| Multi-Gerät-Sync | ✗ | ✓ automatisch |
+| Gemeinsame Pflanzenbibliothek | ✗ | ✓ (geteilte DB) |
+| Offline-Nutzung | ✓ vollständig | möglich, aber Sync-Logik nötig |
+| PFAF/NaturaDB-Proxy | Netlify Function | PocketBase Hook oder eigene Route |
+| Auth / Benutzerkonten | — | eingebaut (OAuth2, E-Mail) |
+| Deployment | Netlify (kostenlos) | VPS / Fly.io / Railway (ab ~5 €/Mo.) |
+| Datenverlust bei Browser-Löschung | ✓ Risiko | ✗ kein Risiko |
+| Komplexität | gering | mittel |
+
+**Wann sinnvoll:** mehrere Geräte, mehrere Nutzer, geteilte Pflanzenbibliothek, kein Datenverlustrisiko.  
+**Wann nicht:** rein persönliches Einzelgerät-Tool, vollständige Offline-Nutzung ohne Sync-Aufwand.
+
+Mögliche Migrationsstrategie: PocketBase als optionaler Sync-Layer, IndexedDB bleibt primärer Cache — ähnlich wie Google Docs offline-first mit Cloud-Sync.
+
 ### Mehrsprachigkeit
 - [ ] UI auf Englisch lokalisieren (i18n-Infrastruktur aufsetzen)
 - [ ] Pflanzennamen mehrsprachig speichern (de/en/la)

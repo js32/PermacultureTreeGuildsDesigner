@@ -1,6 +1,6 @@
 {
-  "name": "Permaculture Guild Designer",
-  "short_name": "GuildDesigner",
+  "name": "Perma Guild Forge",
+  "short_name": "GuildForge",
   "description": "Design und Verwaltung von Permakultur-Pflanzengilden",
   "start_url": "/",
   "display": "standalone",
