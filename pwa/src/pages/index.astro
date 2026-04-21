@@ -758,13 +758,32 @@ import Layout from '../layouts/Layout.astro';
             if (plant.latinName) plant._sources['latinName'] = 'manual';
             if (plant.commonName) plant._sources['commonName'] = 'manual';
 
-            if (r.wikidataId && isSourceEnabled('wikidata')) {
+            if (isSourceEnabled('wikidata')) {
               b.textContent = 'Wikidata...';
-              const details = await fetchPlantDetails(r.wikidataId);
-              if (Object.keys(details).length > 0) {
-                Object.assign(plant, details);
-                trackSources(plant, details, 'wikidata');
-                sourceLabels.push('Wikidata');
+              let wdId = r.wikidataId;
+              if (!wdId && plant.latinName) {
+                const searchUrl = new URL('https://www.wikidata.org/w/api.php');
+                searchUrl.searchParams.set('action', 'wbsearchentities');
+                searchUrl.searchParams.set('search', plant.latinName);
+                searchUrl.searchParams.set('language', 'en');
+                searchUrl.searchParams.set('type', 'item');
+                searchUrl.searchParams.set('limit', '1');
+                searchUrl.searchParams.set('format', 'json');
+                searchUrl.searchParams.set('origin', '*');
+                const sr = await fetch(searchUrl.toString());
+                if (sr.ok) { const sd = await sr.json(); wdId = sd.search?.[0]?.id; }
+              }
+              if (wdId) {
+                const details = await fetchPlantDetails(wdId);
+                if (Object.keys(details).length > 0) {
+                  const filled: Partial<PlantData> = {};
+                  for (const [key, value] of Object.entries(details)) {
+                    const cur = (plant as any)[key];
+                    const empty = cur === null || cur === undefined || cur === '' || cur === false;
+                    if (empty && value) { (plant as any)[key] = value; (filled as any)[key] = value; }
+                  }
+                  if (Object.keys(filled).length > 0) { trackSources(plant, filled, 'wikidata'); sourceLabels.push('Wikidata'); }
+                }
               }
             }
 
