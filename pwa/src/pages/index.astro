@@ -20,10 +20,21 @@ import Layout from '../layouts/Layout.astro';
       <button id="btn-add" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Pflanze</button>
       <button id="btn-import" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Import JSON</button>
       <button id="btn-import-csv" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Import CSV</button>
-      <button id="btn-csv-template" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200" title="CSV-Vorlage herunterladen">Vorlage ↓</button>
+      <button id="btn-csv-template" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200" title="Leere CSV-Vorlage herunterladen">CSV-Vorlage ↓</button>
       <button id="btn-export" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Export</button>
       <button id="btn-load-samples" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Beispieldaten</button>
-      <button id="btn-view-toggle" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200" title="Kachel-/Listenansicht">☰ Liste</button>
+      <div class="flex overflow-hidden rounded-lg ring-1 ring-stone-200">
+        <button id="btn-view-grid" class="bg-green-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-green-800" title="Kachelansicht">⊞</button>
+        <button id="btn-view-list" class="bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-200" title="Listenansicht">☰</button>
+        <button id="btn-view-cards" class="bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-200" title="Kartenansicht">🃏</button>
+      </div>
+      <div id="cards-toolbar" style="display:none" class="flex gap-2">
+        <select id="card-type-select" class="rounded-lg border border-stone-300 bg-white px-2 py-2 text-sm shadow-sm focus:border-green-500 focus:outline-none">
+          <option value="poly">Pflanzenkarten</option>
+          <option value="stripe">Streifenkarten</option>
+        </select>
+        <button id="btn-pdf-all" class="rounded-lg bg-green-700 px-3 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800">PDF ↓</button>
+      </div>
     </div>
   </div>
 
@@ -199,7 +210,8 @@ import Layout from '../layouts/Layout.astro';
   import { validatePlant } from '../lib/validate';
   import { searchPlants, fetchProxyData, fetchPlantDetails } from '../lib/plant-search';
   import { isSourceEnabled } from '../lib/settings';
-  import { exportCardsPDF } from '../lib/pdf-export';
+  import { exportCardsPDF, exportSingleCardPDF } from '../lib/pdf-export';
+  import { renderPolyCardHtml, renderStripeCardHtml } from '../lib/card-html';
 
   const listEl = document.getElementById('plant-list')!;
   const dialog = document.getElementById('plant-dialog') as HTMLDialogElement;
@@ -209,7 +221,8 @@ import Layout from '../layouts/Layout.astro';
   const bulkBar = document.getElementById('bulk-bar')!;
   const bulkCountEl = document.getElementById('bulk-count')!;
 
-  let viewMode: 'grid' | 'list' = 'grid';
+  let viewMode: 'grid' | 'list' | 'cards' = 'grid';
+  let cardViewMode: 'poly' | 'stripe' = 'poly';
   let selectedIds = new Set<string>();
   let editingPlant: PlantData | null = null;
   let cachedPlants: PlantData[] = [];
@@ -344,12 +357,25 @@ import Layout from '../layouts/Layout.astro';
 
   function updateBulkBar() {
     const n = selectedIds.size;
-    if (n === 0 || viewMode === 'grid') {
+    if (n === 0 || viewMode !== 'list') {
       bulkBar.style.display = 'none';
     } else {
       bulkBar.style.display = 'flex';
       bulkCountEl.textContent = `${n} ausgewählt`;
     }
+  }
+
+  function updateViewButtons() {
+    const btnGrid = document.getElementById('btn-view-grid')!;
+    const btnList = document.getElementById('btn-view-list')!;
+    const btnCards = document.getElementById('btn-view-cards')!;
+    const cardsToolbar = document.getElementById('cards-toolbar')!;
+    const activeClass = ['bg-green-700', 'text-white'];
+    const inactiveClass = ['bg-stone-100', 'text-stone-700'];
+    [btnGrid, btnList, btnCards].forEach(b => { b.classList.remove(...activeClass); b.classList.add(...inactiveClass); });
+    const active = viewMode === 'grid' ? btnGrid : viewMode === 'list' ? btnList : btnCards;
+    active.classList.remove(...inactiveClass); active.classList.add(...activeClass);
+    cardsToolbar.style.display = viewMode === 'cards' ? 'flex' : 'none';
   }
 
   // ── Sorting ───────────────────────────────────────────────────────────────────
@@ -451,7 +477,38 @@ import Layout from '../layouts/Layout.astro';
 
     const displayPlants = viewMode === 'list' ? sortedPlants(cachedPlants) : cachedPlants;
 
-    if (viewMode === 'grid') {
+    if (viewMode === 'cards') {
+      const isStripe = cardViewMode === 'stripe';
+      listEl.className = isStripe ? 'flex flex-col items-stretch gap-2' : 'flex flex-wrap justify-center gap-6';
+      listEl.innerHTML = displayPlants.map((p, i) => {
+        const cardHtml = isStripe ? renderStripeCardHtml(p) : renderPolyCardHtml(p);
+        return `
+        <div class="group relative overflow-hidden rounded-xl shadow-md ring-1 ring-stone-200 transition hover:shadow-lg hover:ring-green-300" data-id="${p.id}" data-idx="${i}">
+          <div class="pointer-events-none${isStripe ? ' overflow-x-auto' : ''}">${cardHtml}</div>
+          <div class="relative z-10 flex items-center justify-between bg-white/90 px-3 py-1.5">
+            <span class="text-xs text-stone-400">${p.commonName || p.latinName}</span>
+            <div class="flex gap-1.5">
+              <button class="btn-edit inline-flex items-center gap-1 rounded-md bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-600 transition hover:bg-blue-100 hover:text-blue-800">Bearb.</button>
+              <button class="btn-pdf-single inline-flex items-center gap-1 rounded-md bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-600 transition hover:bg-green-100 hover:text-green-800">PDF</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+      listEl.querySelectorAll('.btn-pdf-single').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const b = btn as HTMLButtonElement;
+          const id = (b.closest('[data-id]') as HTMLElement).dataset.id!;
+          const plant = cachedPlants.find(p => p.id === id);
+          if (!plant) return;
+          b.disabled = true; b.textContent = '...';
+          try { await exportSingleCardPDF(plant); }
+          catch (err) { alert(`PDF-Fehler: ${err instanceof Error ? err.message : String(err)}`); }
+          finally { b.disabled = false; b.textContent = 'PDF'; }
+        });
+      });
+
+    } else if (viewMode === 'grid') {
       listEl.className = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3';
       listEl.innerHTML = displayPlants.map(p => {
         const v = validatePlant(p);
@@ -661,12 +718,25 @@ import Layout from '../layouts/Layout.astro';
 
   // ── View toggle + Bulk actions ────────────────────────────────────────────────
 
-  document.getElementById('btn-view-toggle')!.addEventListener('click', () => {
-    viewMode = viewMode === 'grid' ? 'list' : 'grid';
-    const btn = document.getElementById('btn-view-toggle')!;
-    btn.textContent = viewMode === 'list' ? '⊞ Kacheln' : '☰ Liste';
-    if (viewMode === 'grid') { selectedIds.clear(); updateBulkBar(); }
+  document.getElementById('btn-view-grid')!.addEventListener('click', () => {
+    viewMode = 'grid'; selectedIds.clear(); updateBulkBar(); updateViewButtons(); renderList();
+  });
+  document.getElementById('btn-view-list')!.addEventListener('click', () => {
+    viewMode = 'list'; updateViewButtons(); renderList();
+  });
+  document.getElementById('btn-view-cards')!.addEventListener('click', () => {
+    viewMode = 'cards'; selectedIds.clear(); updateBulkBar(); updateViewButtons(); renderList();
+  });
+  document.getElementById('card-type-select')!.addEventListener('change', (e) => {
+    cardViewMode = (e.target as HTMLSelectElement).value as 'poly' | 'stripe';
     renderList();
+  });
+  document.getElementById('btn-pdf-all')!.addEventListener('click', async () => {
+    if (cachedPlants.length === 0) return;
+    const btn = document.getElementById('btn-pdf-all') as HTMLButtonElement;
+    btn.disabled = true; btn.textContent = '...';
+    try { await exportCardsPDF(cachedPlants); }
+    finally { btn.disabled = false; btn.textContent = 'PDF ↓'; }
   });
 
   document.getElementById('btn-select-all')!.addEventListener('click', () => {
@@ -826,5 +896,6 @@ import Layout from '../layouts/Layout.astro';
   searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
   searchInput.addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(doSearch, 300); });
 
+  updateViewButtons();
   renderList();
 </script>
