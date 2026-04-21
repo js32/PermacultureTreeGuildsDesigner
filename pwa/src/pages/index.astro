@@ -20,6 +20,7 @@ import Layout from '../layouts/Layout.astro';
       <button id="btn-add" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Pflanze</button>
       <button id="btn-import" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Import JSON</button>
       <button id="btn-import-csv" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Import CSV</button>
+      <button id="btn-csv-template" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200" title="CSV-Vorlage herunterladen">Vorlage ↓</button>
       <button id="btn-export" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Export</button>
       <button id="btn-load-samples" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Beispieldaten</button>
       <button id="btn-view-toggle" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200" title="Kachel-/Listenansicht">☰ Liste</button>
@@ -212,6 +213,8 @@ import Layout from '../layouts/Layout.astro';
   let selectedIds = new Set<string>();
   let editingPlant: PlantData | null = null;
   let cachedPlants: PlantData[] = [];
+  let sortField: 'commonName' | 'latinName' | 'heightM' | 'completeness' = 'commonName';
+  let sortDir: 'asc' | 'desc' = 'asc';
 
   const textFields = ['latinName', 'commonName', 'climateZone', 'imageUrl'] as const;
   const numberFields = ['heightM', 'widthM', 'eatableScore', 'medsScore', 'materialScore'] as const;
@@ -349,6 +352,33 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
+  // ── Sorting ───────────────────────────────────────────────────────────────────
+
+  function sortedPlants(plants: PlantData[]): PlantData[] {
+    return [...plants].sort((a, b) => {
+      let va: string | number, vb: string | number;
+      if (sortField === 'completeness') {
+        va = validatePlant(a).missing.length;
+        vb = validatePlant(b).missing.length;
+      } else if (sortField === 'heightM') {
+        va = a.heightM ?? Infinity;
+        vb = b.heightM ?? Infinity;
+      } else {
+        va = ((a[sortField] as string) || '').toLowerCase();
+        vb = ((b[sortField] as string) || '').toLowerCase();
+      }
+      if (va < vb) return sortDir === 'asc' ? -1 : 1;
+      if (va > vb) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  function thSort(field: typeof sortField, label: string): string {
+    const active = sortField === field;
+    const arrow = active ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ' ↕';
+    return `<th class="cursor-pointer select-none px-3 py-2.5 hover:text-stone-800" data-sort="${field}">${label}${active ? `<span class="text-green-600">${arrow}</span>` : `<span class="text-stone-300">${arrow}</span>`}</th>`;
+  }
+
   // ── CSV export ────────────────────────────────────────────────────────────────
 
   function buildCSV(plants: PlantData[]): string {
@@ -377,6 +407,30 @@ import Layout from '../layouts/Layout.astro';
     return [headers.join(','), ...rows].join('\r\n');
   }
 
+  function buildCSVTemplate(): string {
+    const headers = [
+      'Lateinisch', 'Deutsch', 'Höhe_m', 'Breite_m', 'Klimazone',
+      'Essbar', 'Kulinarisch', 'Medizinisch', 'Material', 'Futter', 'Brennstoff',
+      'N_Fixierung', 'Mineralien', 'Bodendecker', 'Insekten', 'Schädling',
+      'Tierschutz', 'Windschutz', 'Wind_See',
+      'Sonne_voll', 'Halbschatten', 'Schatten',
+      'Wasser_trocken', 'Wasser_mittel', 'Wasser_nass', 'Wasserpflanze',
+      'pH_sehr_sauer', 'pH_sauer', 'pH_neutral', 'pH_alkalisch', 'pH_sehr_alk', 'pH_salin',
+      'Wachstum_langsam', 'Wachstum_mittel', 'Wachstum_schnell', 'Bild_URL',
+    ];
+    const example = [
+      '"Sambucus nigra"', '"Schwarzer Holunder"', '6', '4', '"4-8"',
+      '1','0','1','0','0','0',
+      '0','1','0','1','0',
+      '0','0','0',
+      '1','1','1',
+      '0','1','1','0',
+      '0','0','1','0','0','0',
+      '0','1','0', '""',
+    ];
+    return [headers.join(','), example.join(',')].join('\r\n');
+  }
+
   function triggerDownload(content: string, filename: string, type: string) {
     const blob = new Blob([content], { type });
     const a = document.createElement('a');
@@ -395,9 +449,11 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
 
+    const displayPlants = viewMode === 'list' ? sortedPlants(cachedPlants) : cachedPlants;
+
     if (viewMode === 'grid') {
       listEl.className = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3';
-      listEl.innerHTML = cachedPlants.map(p => {
+      listEl.innerHTML = displayPlants.map(p => {
         const v = validatePlant(p);
         return `
         <div class="group relative rounded-xl bg-white p-4 shadow-sm ring-1 ring-stone-200 transition hover:shadow-md hover:ring-green-300" data-id="${p.id}">
@@ -432,16 +488,16 @@ import Layout from '../layouts/Layout.astro';
           <thead>
             <tr class="border-b border-stone-200 text-left text-xs font-medium text-stone-500">
               <th class="w-8 px-3 py-2.5"><input type="checkbox" id="select-all-check" class="accent-green-600" ${allSelected ? 'checked' : ''} /></th>
-              <th class="px-3 py-2.5">Name</th>
-              <th class="hidden px-3 py-2.5 sm:table-cell">Lateinisch</th>
-              <th class="px-3 py-2.5">H</th>
+              ${thSort('commonName', 'Name')}
+              ${thSort('latinName', 'Lateinisch')}
+              ${thSort('heightM', 'H')}
               <th class="px-3 py-2.5">B</th>
               <th class="px-3 py-2.5">Quellen</th>
               <th class="px-3 py-2.5">Aktionen</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-stone-100">
-            ${cachedPlants.map(p => {
+            ${displayPlants.map(p => {
               const srcHtml = p._sources
                 ? [...new Set(Object.values(p._sources) as DataSource[])].filter(s => SOURCE_COLOR[s])
                     .map(s => `<span class="inline-block rounded px-1 py-px text-[10px] font-semibold ${SOURCE_COLOR[s]}" title="${SOURCE_LABEL[s]}">${SOURCE_LABEL[s]}</span>`)
@@ -468,6 +524,16 @@ import Layout from '../layouts/Layout.astro';
           </tbody>
         </table>`;
 
+      // Sort column headers
+      listEl.querySelectorAll<HTMLElement>('[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+          const f = th.dataset.sort as typeof sortField;
+          if (sortField === f) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+          else { sortField = f; sortDir = 'asc'; }
+          renderList();
+        });
+      });
+
       document.getElementById('select-all-check')?.addEventListener('change', (e) => {
         if ((e.target as HTMLInputElement).checked) {
           cachedPlants.forEach(p => selectedIds.add(p.id));
@@ -480,7 +546,7 @@ import Layout from '../layouts/Layout.astro';
 
       listEl.querySelectorAll<HTMLInputElement>('.row-check').forEach((cb, idx) => {
         cb.addEventListener('change', (e) => {
-          const id = cachedPlants[idx].id;
+          const id = displayPlants[idx].id;
           if ((e.target as HTMLInputElement).checked) selectedIds.add(id);
           else selectedIds.delete(id);
           updateBulkBar();
@@ -632,6 +698,9 @@ import Layout from '../layouts/Layout.astro';
   // ── Standard actions ──────────────────────────────────────────────────────────
 
   document.getElementById('btn-load-samples')!.addEventListener('click', async () => { await importPlants(samplePlants); renderList(); });
+  document.getElementById('btn-csv-template')!.addEventListener('click', () => {
+    triggerDownload(buildCSVTemplate(), 'pflanzen-vorlage.csv', 'text/csv;charset=utf-8;');
+  });
   document.getElementById('btn-export')!.addEventListener('click', () => {
     triggerDownload(JSON.stringify(cachedPlants, null, 2), 'plants.json', 'application/json');
   });

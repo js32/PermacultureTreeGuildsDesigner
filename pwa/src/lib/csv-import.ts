@@ -1,5 +1,51 @@
 import { createEmptyPlant, type PlantData } from './types';
 
+/** Field mapping from German/export column names (used in the app's own CSV export and import template) */
+const GERMAN_TEXT_MAP: Record<string, keyof PlantData> = {
+  'Lateinisch': 'latinName',
+  'Deutsch': 'commonName',
+  'Klimazone': 'climateZone',
+  'Bild_URL': 'imageUrl',
+};
+
+const GERMAN_NUM_MAP: Record<string, keyof PlantData> = {
+  'Höhe_m': 'heightM',
+  'Breite_m': 'widthM',
+};
+
+const GERMAN_BOOL_MAP: Record<string, keyof PlantData> = {
+  'Essbar': 'eatable',
+  'Kulinarisch': 'culinaric',
+  'Medizinisch': 'meds',
+  'Material': 'material',
+  'Futter': 'fodder',
+  'Brennstoff': 'fuel',
+  'N_Fixierung': 'nitrogenFix',
+  'Mineralien': 'mineralFix',
+  'Bodendecker': 'groundCover',
+  'Insekten': 'insects',
+  'Schädling': 'pest',
+  'Tierschutz': 'animalProtection',
+  'Windschutz': 'windBreaking',
+  'Wind_See': 'windBreakingOnSea',
+  'Sonne_voll': 'sunFull',
+  'Halbschatten': 'sunMid',
+  'Schatten': 'sunShadow',
+  'Wasser_trocken': 'waterDry',
+  'Wasser_mittel': 'waterMid',
+  'Wasser_nass': 'waterWet',
+  'Wasserpflanze': 'waterPlant',
+  'pH_sehr_sauer': 'phVeryAcid',
+  'pH_sauer': 'phAcid',
+  'pH_neutral': 'phNeutral',
+  'pH_alkalisch': 'phAlkaline',
+  'pH_sehr_alk': 'phVeryAlkaline',
+  'pH_salin': 'phSaline',
+  'Wachstum_langsam': 'growSpeedLow',
+  'Wachstum_mittel': 'growSpeedMid',
+  'Wachstum_schnell': 'growSpeedHigh',
+};
+
 /** Field mapping from PowerShell override.csv column names to PlantData properties */
 const BOOL_MAP: Record<string, keyof PlantData> = {
   'b_eatable_element': 'eatable',
@@ -99,51 +145,57 @@ function parseCSVLine(line: string, delimiter: string): string[] {
 
 export function importFromCSV(text: string): PlantData[] {
   const rows = parseCSV(text);
+  if (rows.length === 0) return [];
+
+  // Detect format by checking first row's keys
+  const firstKeys = Object.keys(rows[0]);
+  const isGermanFormat = firstKeys.includes('Lateinisch') || firstKeys.includes('Deutsch');
+
   return rows.map(row => {
     const plant = createEmptyPlant();
 
-    // Text fields
-    if (row['t_latin-name_text']) plant.latinName = row['t_latin-name_text'];
-    if (row['t_common-name_text']) plant.commonName = row['t_common-name_text'];
-    if (row['t_climate-zone_text']) plant.climateZone = row['t_climate-zone_text'];
+    if (isGermanFormat) {
+      // German/export format
+      for (const [col, field] of Object.entries(GERMAN_TEXT_MAP)) {
+        if (row[col]) (plant as any)[field] = row[col];
+      }
+      for (const [col, field] of Object.entries(GERMAN_NUM_MAP)) {
+        if (row[col]) {
+          const v = parseFloat(row[col].replace(',', '.'));
+          if (!isNaN(v)) (plant as any)[field] = v;
+        }
+      }
+      for (const [col, field] of Object.entries(GERMAN_BOOL_MAP)) {
+        if (row[col] !== undefined) (plant as any)[field] = parseBool(row[col]);
+      }
+    } else {
+      // PowerShell format
+      if (row['t_latin-name_text']) plant.latinName = row['t_latin-name_text'];
+      if (row['t_common-name_text']) plant.commonName = row['t_common-name_text'];
+      if (row['t_climate-zone_text']) plant.climateZone = row['t_climate-zone_text'];
 
-    // Height/Width — may be like "1-2m" or just a number
-    if (row['t_height_text']) {
-      const h = parseFloat(row['t_height_text'].replace(/[^\d.,\-]/g, '').replace(',', '.'));
-      if (!isNaN(h)) plant.heightM = h;
-    }
-    if (row['t_width_text']) {
-      const w = parseFloat(row['t_width_text'].replace(/[^\d.,\-]/g, '').replace(',', '.'));
-      if (!isNaN(w)) plant.widthM = w;
-    }
+      if (row['t_height_text']) {
+        const h = parseFloat(row['t_height_text'].replace(/[^\d.,\-]/g, '').replace(',', '.'));
+        if (!isNaN(h)) plant.heightM = h;
+      }
+      if (row['t_width_text']) {
+        const w = parseFloat(row['t_width_text'].replace(/[^\d.,\-]/g, '').replace(',', '.'));
+        if (!isNaN(w)) plant.widthM = w;
+      }
+      if (row['t_eatable-score_text']) { const s = parseInt(row['t_eatable-score_text']); if (!isNaN(s)) plant.eatableScore = s; }
+      if (row['t_meds-score_text']) { const s = parseInt(row['t_meds-score_text']); if (!isNaN(s)) plant.medsScore = s; }
+      if (row['t_material_score_text']) { const s = parseInt(row['t_material_score_text']); if (!isNaN(s)) plant.materialScore = s; }
 
-    // Scores
-    if (row['t_eatable-score_text']) {
-      const s = parseInt(row['t_eatable-score_text']);
-      if (!isNaN(s)) plant.eatableScore = s;
-    }
-    if (row['t_meds-score_text']) {
-      const s = parseInt(row['t_meds-score_text']);
-      if (!isNaN(s)) plant.medsScore = s;
-    }
-    if (row['t_material_score_text']) {
-      const s = parseInt(row['t_material_score_text']);
-      if (!isNaN(s)) plant.materialScore = s;
-    }
-
-    // Boolean fields
-    for (const [csvKey, plantKey] of Object.entries(BOOL_MAP)) {
-      if (row[csvKey] !== undefined) {
-        const val = parseBool(row[csvKey]);
-        // Handle fruit/flower month booleans
-        if (typeof plantKey === 'string' && plantKey.startsWith('fruitMonth_')) {
-          const idx = parseInt(plantKey.split('_')[1]);
-          plant.fruitMonths[idx] = val;
-        } else if (typeof plantKey === 'string' && plantKey.startsWith('flowerMonth_')) {
-          const idx = parseInt(plantKey.split('_')[1]);
-          plant.flowerMonths[idx] = val;
-        } else {
-          (plant as any)[plantKey] = val;
+      for (const [csvKey, plantKey] of Object.entries(BOOL_MAP)) {
+        if (row[csvKey] !== undefined) {
+          const val = parseBool(row[csvKey]);
+          if (typeof plantKey === 'string' && plantKey.startsWith('fruitMonth_')) {
+            plant.fruitMonths[parseInt(plantKey.split('_')[1])] = val;
+          } else if (typeof plantKey === 'string' && plantKey.startsWith('flowerMonth_')) {
+            plant.flowerMonths[parseInt(plantKey.split('_')[1])] = val;
+          } else {
+            (plant as any)[plantKey] = val;
+          }
         }
       }
     }

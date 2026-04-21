@@ -1,6 +1,39 @@
 import { createEmptyPlant, type DataSource, type PlantData } from './types';
 import { isSourceEnabled } from './settings';
 
+// ── Local plant database ─────────────────────────────────────────────────────
+
+interface DBEntry { latinName: string; commonName?: string; }
+let _dbCache: DBEntry[] | null = null;
+
+async function getPlantDB(): Promise<DBEntry[]> {
+  if (_dbCache !== null) return _dbCache;
+  try {
+    const res = await fetch('/plants-db.json');
+    _dbCache = res.ok ? await res.json() : [];
+  } catch {
+    _dbCache = [];
+  }
+  return _dbCache!;
+}
+
+function searchDB(db: DBEntry[], query: string): SearchResult[] {
+  const q = query.toLowerCase();
+  return db
+    .filter(p =>
+      p.latinName.toLowerCase().includes(q) ||
+      (p.commonName && p.commonName.toLowerCase().includes(q))
+    )
+    .slice(0, 8)
+    .map(p => ({
+      latinName: p.latinName,
+      commonName: p.commonName || p.latinName,
+      description: 'Lokale Datenbank',
+    }));
+}
+
+// ── Source recording ─────────────────────────────────────────────────────────
+
 function recordSources(plant: PlantData, data: Partial<PlantData>, source: DataSource) {
   if (!plant._sources) plant._sources = {};
   for (const key of Object.keys(data) as (keyof PlantData)[]) {
@@ -39,7 +72,10 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
   const wikidataEnabled = isSourceEnabled('wikidata');
   const proxyEnabled = isSourceEnabled('pfaf') || isSourceEnabled('naturadb');
 
-  const results: SearchResult[] = [];
+  // 1. Local DB first (instant, no network)
+  const db = await getPlantDB();
+  const results: SearchResult[] = searchDB(db, query);
+  const localLatinNames = new Set(results.map(r => r.latinName.toLowerCase()));
 
   // Wikidata autocomplete search
   if (wikidataEnabled) {
@@ -78,8 +114,11 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
               const labelEn = entity.labels?.en?.value;
               const descDe = entity.descriptions?.de?.value;
               const descEn = entity.descriptions?.en?.value;
+              const latin = taxonClaim || '';
+              // Skip if already found in local DB
+              if (latin && localLatinNames.has(latin.toLowerCase())) continue;
               results.push({
-                latinName: taxonClaim || '',
+                latinName: latin,
                 commonName: labelDe || labelEn || taxonClaim || '',
                 wikidataId: item.title,
                 description: descDe || descEn || '',
