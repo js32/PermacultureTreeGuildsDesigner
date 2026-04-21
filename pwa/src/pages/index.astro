@@ -371,12 +371,14 @@ import Layout from '../layouts/Layout.astro';
     const btnList = document.getElementById('btn-view-list')!;
     const btnCards = document.getElementById('btn-view-cards')!;
     const cardsToolbar = document.getElementById('cards-toolbar')!;
+    const heading = document.querySelector('h1.text-xl') as HTMLElement | null;
     const activeClass = ['bg-green-700', 'text-white'];
     const inactiveClass = ['bg-stone-100', 'text-stone-700'];
     [btnGrid, btnList, btnCards].forEach(b => { b.classList.remove(...activeClass); b.classList.add(...inactiveClass); });
     const active = viewMode === 'grid' ? btnGrid : viewMode === 'list' ? btnList : btnCards;
     active.classList.remove(...inactiveClass); active.classList.add(...activeClass);
     cardsToolbar.style.display = viewMode === 'cards' ? 'flex' : 'none';
+    if (heading) heading.textContent = viewMode === 'cards' ? 'Pflanzenkarten' : 'Pflanzenliste';
   }
 
   // ── Sorting ───────────────────────────────────────────────────────────────────
