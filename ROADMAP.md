@@ -7,55 +7,52 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 ### Implementiert
 
 - **Pflanzenverwaltung** — Erstellen, Bearbeiten, Löschen von Pflanzen mit ~50 Attributen (Nutzung, Ökosystemfunktionen, Sonne/Wasser/pH, Wachstum, Blüte-/Fruchtmonate)
-- **Pflanzendaten-Import** — Suche via Wikidata-API, Anreicherung via PFAF & NaturaDB (Netlify-Proxy)
-- **CSV- & JSON-Import/Export**
-- **Kartenvorschau** — Live-Vorschau der Pflanzenkarten im Browser (Canvas-Renderer)
-- **PDF-Export** — Polykarten (70×120 mm) und Streifenkarten (290×17 mm) via pdf-lib
+- **Pflanzendaten-Import** — Suche via lokale Golden-Master-DB (`plants-db.json`) + Wikidata-API (automatisch bei Import), Anreicherung via PFAF & NaturaDB (Netlify-Proxy)
+- **CSV- & JSON-Import/Export** — inkl. CSV-Vorlagen-Download
+- **Drei Ansichten** — Kachelansicht, Listenansicht (sortierbar), Kartenansicht (Poly- & Streifenkarten); Toggle in der Toolbar
+- **Suchleiste** — prominent, mit Lupe-Icon, floating Dropdown, Multi-Add, Wikidata/PFAF/NaturaDB-Enrichment direkt beim Import
+- **Kartenvorschau** — Live-Vorschau der Pflanzenkarten im Browser
+- **PDF-Export** — Polykarten (70×120 mm) und Streifenkarten (290×17 mm) via pdf-lib; Bulk-PDF aus Selektion
+- **Bulk-Operationen** — Auswählen, Löschen, Ergänzen, JSON/CSV/PDF-Export ausgewählter Pflanzen
+- **Feldprovenenz** — `_sources` pro Datenpunkt; Quell-Badges im Edit-Dialog; Outline-Chips in Kacheln/Liste
 - **Einstellungsseite** — Datenquellen aktivieren/deaktivieren
+- **UI-Redesign** (Branch `ui`, noch nicht auf `main` gemergt):
+  - Kachelansicht: Bildvorschau, farbiger Akzentstreifen nach Primärnutzung, Vollständigkeitsbalken
+  - Listenansicht: Akzentpunkt, Nutzungsdots-Spalte, Vollständigkeitsbalken, sortierbar nach Vollständigkeit
+  - Leerer Zustand: Fiddlehead-Illustration + CTA
+  - Pflanzenzahl-Chip im Header
+  - Visuelles Vokabular: ausgefüllte Badges = Verwendung, Outline-Chips = Datenquelle
 - **PWA / Offline** — Service Worker, installierbar auf Desktop & Mobil
 
 ---
 
 ## Kurzfristig
 
-### PDF-Rendering (in Arbeit)
-- [ ] LibreWolf-Kompatibilität sicherstellen (SMask-Problem mit pdf.js)
+### UI / UX
+- [ ] **Branch `ui` → `main` mergen** — nach finalem Review
+- [ ] **Dark Mode** — Farbsystem ist bereits strukturiert (warm=Nutzung, cool=Ökosystem); dunkle Variante ergänzen
+- [ ] **Konfigurierbare Farbthemen** — Farbenblindheits-Modus
+- [ ] **Bild-Fallback** — Silhouette nach Pflanzentyp wenn kein Foto vorhanden
+
+### PDF-Rendering
 - [ ] Qualitäts-Check: Karten in mehreren Viewern testen (Chrome, Firefox, Evince, Okular)
 - [ ] Druckränder und Schnittmarken als Option
 
-### Feldprovenenz (Datenquellen pro Datenpunkt)
+### Feldprovenenz (Feinschliff)
+- [ ] **Kartenvorschau & PDF** — kompakte Quell-Darstellung auf der gedruckten Karte (z.B. farbiger Punkt-Cluster in der Infozeile)
 
-Da Pflanzendaten aus mehreren Quellen aggregiert werden (Wikidata → PFAF → NaturaDB → manuell), muss die Herkunft **pro Feld** gespeichert und angezeigt werden — nicht nur pro Pflanze.
-
-- [ ] **Datenmodell erweitern** — `PlantData` bekommt ein optionales `_sources: Partial<Record<keyof PlantData, 'wikidata' | 'pfaf' | 'naturadb' | 'manual' | 'csv'>>` Feld; wird beim Import befüllt, bei manueller Bearbeitung auf `'manual'` gesetzt
-- [ ] **Import-Pipeline anpassen** — `importPlantFromSearch()` und `fetchProxyData()` protokollieren, welches Feld aus welcher Quelle stammt
-- [ ] **Edit-Dialog** — Jedes Eingabefeld zeigt ein kleines farbiges Quell-Badge (W / P / N / M); Tooltip mit vollem Quellnamen; bei manueller Änderung wechselt Badge zu „M"
-- [ ] **Kartenvorschau & PDF** — Kompakte Darstellung: z.B. farbige Unterstreichung oder Punkt-Cluster in der Infozeile der Karte, die zeigen, welche Quellen beteiligt sind (nicht jedes Feld einzeln — zu kleinteilig für 70×120 mm)
-- [ ] **Listenansicht** — Spalte oder Tooltip zeigt Quellen-Mix der Pflanze (z.B. „W + P")
-
-### Karten-Design
+### QR-Code
 - [ ] QR-Code pro Karte (Link zur Wikidata-Seite oder eigener Pflanzendatensatz)
-- [ ] Konfigurierbare Farbthemen (Hell/Dunkel, Farbenblindheits-Modus)
-- [ ] Bild-Fallback wenn kein Foto verfügbar (z.B. Silhouette nach Pflanzentyp)
-
-### Pflanzenliste & Bulk-Operationen
-- [ ] **Listenansicht-Toggle** — Button in der Pflanzen-Übersicht zum Umschalten zwischen Kachel- und Tabellenansicht
-- [ ] **Bulk-Selektion** — Checkboxen in der Listenansicht, „Alle auswählen"-Button
-- [ ] **Bulk-Aktionen** — Ausgewählte Pflanzen zusammen löschen, exportieren (JSON/CSV) oder direkt als PDF drucken
-- [ ] **Spalten-Sortierung** in der Tabellenansicht (Name, Höhe, Nutzung …)
-
-### Vordefinierte Pflanzendatenbank (Golden Master)
-- [ ] **Eingebettete JSON-Datenbank** — `pwa/public/plants-db.json` mit kuratierten Stammdaten; wird bei der Suche priorisiert vor Live-API-Abfragen
-- [ ] **Suchlogik anpassen** — lokale DB zuerst durchsuchen, dann Wikidata/Proxy als Fallback
-- [ ] **Nutzerseitig editierbar** — Änderungen an Golden-Master-Pflanzen landen in der IndexedDB (Override-Schicht), Original bleibt unverändert
-- [ ] **Pflege-Workflow** — Wie kommen neue kuratierte Pflanzen in die DB? (Pull-Request-Prozess definieren)
 
 ### Daten
-- [ ] **Import-Template zum Download** — `pflanzendaten-vorlage.csv` (und `.json`) mit allen Feldern, Spalten-Beschriftung auf Deutsch, Beispielzeile; direkt aus der App herunterladen
-- [ ] **Pflanzenbild-Upload** — Bild lokal speichern (als Base64 in IndexedDB oder als File in OPFS), nicht nur externe URL
-- [ ] **Bild-Bearbeitung im Edit-Dialog** — Vorschau des aktuellen Bilds, Möglichkeit es zu ersetzen oder zu löschen
-- [ ] Fehlende Felder ergänzen: Boden-Typ, Ausbreitungsart (Samen/Ableger/Wurzel), Wurzeltiefe
+- [ ] **Pflanzenbild-Upload** — Bild lokal speichern (Base64 in IndexedDB oder File in OPFS), nicht nur externe URL
+- [ ] **Bild-Bearbeitung im Edit-Dialog** — Vorschau des aktuellen Bilds, ersetzen/löschen
+- [ ] Fehlende Felder: Boden-Typ, Ausbreitungsart (Samen/Ableger/Wurzel), Wurzeltiefe
 - [ ] Validierung verbessern: Warnungen bei unvollständigen Datensätzen
+
+### Vordefinierte Pflanzendatenbank (Golden Master, Feinschliff)
+- [ ] **Nutzerseitig editierbar** — Änderungen an Golden-Master-Pflanzen landen in IndexedDB (Override-Schicht), Original bleibt unverändert
+- [ ] **Pflege-Workflow** — Wie kommen neue kuratierte Pflanzen in die DB? (PR-Prozess definieren)
 
 ---
 
@@ -112,9 +109,8 @@ Mögliche Migrationsstrategie: PocketBase als optionaler Sync-Layer, IndexedDB b
 - [ ] Optionaler Cloud-Sync (z.B. via eigenen Server oder CRDTs für Peer-to-Peer)
 
 ### Migration PowerShell → PWA
-- [ ] PowerShell-Skripte (`ConvertFrom-PlantList.ps1` etc.) als Legacy markieren
+- [ ] PowerShell-Skripte als Legacy markieren, README aktualisieren (PWA als primären Einstieg dokumentieren)
 - [ ] Migrationshilfe: Import bestehender `.psd1`-Datensätze in die PWA
-- [ ] README aktualisieren (PWA als primären Einstieg dokumentieren)
 
 ---
 
@@ -126,6 +122,8 @@ Mögliche Migrationsstrategie: PocketBase als optionaler Sync-Layer, IndexedDB b
 | `svg-template.ts` und `card-svg.ts` — redundant neben Canvas-Renderer | ✅ gelöscht |
 | Root-Verzeichnis enthält Build-Artefakte (`index.html`, `sw.js`, `manifest.json`) | ✅ bereinigt |
 | PowerShell-Skripte als Legacy markieren, README aktualisieren | ✅ nach `legacy/` verschoben |
+| `netlify.toml` in `pwa/` — Proxy-Functions nicht erreichbar | ✅ behoben — `netlify.toml` ins Repo-Root mit `base = "pwa"` |
 | Netlify-Proxy hat kein Rate-Limiting | offen |
-| Netlify-Proxy manchmal deployed nicht erreichbar (keine Suchergebnisse für PFAF/NaturaDB) | offen |
+| Netlify-Proxy manchmal nicht erreichbar (keine Suchergebnisse für PFAF/NaturaDB) | offen |
 | Service Worker Cache-Version muss manuell erhöht werden | offen — Build-Hash automatisieren |
+| Branch `ui` noch nicht auf `main` gemergt | offen |
