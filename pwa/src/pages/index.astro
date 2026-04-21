@@ -45,6 +45,7 @@ import Layout from '../layouts/Layout.astro';
     <button id="btn-select-all" class="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50">Alle</button>
     <button id="btn-deselect" class="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50">Abwählen</button>
     <span class="h-4 w-px bg-stone-300"></span>
+    <button id="btn-bulk-enrich" class="rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-200">Ergänzen</button>
     <button id="btn-bulk-delete" class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-200">Löschen</button>
     <button id="btn-bulk-json" class="rounded-lg bg-stone-200 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-300">JSON</button>
     <button id="btn-bulk-csv" class="rounded-lg bg-stone-200 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-300">CSV</button>
@@ -467,6 +468,59 @@ import Layout from '../layouts/Layout.astro';
     URL.revokeObjectURL(a.href);
   }
 
+  // ── Enrich ───────────────────────────────────────────────────────────────────
+
+  async function enrichPlant(plant: PlantData): Promise<number> {
+    if (!plant.latinName) return 0;
+    if (!plant._sources) plant._sources = {};
+    let enriched = 0;
+
+    if (isSourceEnabled('pfaf') || isSourceEnabled('naturadb')) {
+      const proxyData = await fetchProxyData(plant.latinName);
+      const filled: Partial<PlantData> = {};
+      for (const [key, value] of Object.entries(proxyData)) {
+        const cur = (plant as any)[key];
+        const empty = cur === null || cur === undefined || cur === '' || cur === false ||
+          (Array.isArray(cur) && cur.every((v: boolean) => !v));
+        if (empty && value !== null && value !== undefined && value !== '' && value !== false) {
+          (plant as any)[key] = value; (filled as any)[key] = value; enriched++;
+        }
+      }
+      if (Object.keys(filled).length > 0) {
+        const src: DataSource = isSourceEnabled('pfaf') ? 'pfaf' : 'naturadb';
+        trackSources(plant, filled, src);
+      }
+    }
+
+    if (isSourceEnabled('wikidata') && !plant.imageUrl) {
+      const searchUrl = new URL('https://www.wikidata.org/w/api.php');
+      searchUrl.searchParams.set('action', 'wbsearchentities');
+      searchUrl.searchParams.set('search', plant.latinName);
+      searchUrl.searchParams.set('language', 'en');
+      searchUrl.searchParams.set('type', 'item');
+      searchUrl.searchParams.set('limit', '1');
+      searchUrl.searchParams.set('format', 'json');
+      searchUrl.searchParams.set('origin', '*');
+      const sr = await fetch(searchUrl.toString());
+      if (sr.ok) {
+        const sd = await sr.json();
+        const wdId = sd.search?.[0]?.id;
+        if (wdId) {
+          const details = await fetchPlantDetails(wdId);
+          const filled: Partial<PlantData> = {};
+          for (const [key, value] of Object.entries(details)) {
+            const cur = (plant as any)[key];
+            const empty = cur === null || cur === undefined || cur === '' || cur === false;
+            if (empty && value) { (plant as any)[key] = value; (filled as any)[key] = value; enriched++; }
+          }
+          if (Object.keys(filled).length > 0) trackSources(plant, filled, 'wikidata');
+        }
+      }
+    }
+
+    return enriched;
+  }
+
   // ── renderList ────────────────────────────────────────────────────────────────
 
   async function renderList() {
@@ -629,52 +683,7 @@ import Layout from '../layouts/Layout.astro';
         const origText = b.textContent;
         b.disabled = true; b.textContent = '…';
         try {
-          if (!plant._sources) plant._sources = {};
-          let enriched = 0;
-
-          if (isSourceEnabled('pfaf') || isSourceEnabled('naturadb')) {
-            const proxyData = await fetchProxyData(plant.latinName);
-            const filled: Partial<PlantData> = {};
-            for (const [key, value] of Object.entries(proxyData)) {
-              const cur = (plant as any)[key];
-              const empty = cur === null || cur === undefined || cur === '' || cur === false ||
-                (Array.isArray(cur) && cur.every((v: boolean) => !v));
-              if (empty && value !== null && value !== undefined && value !== '' && value !== false) {
-                (plant as any)[key] = value; (filled as any)[key] = value; enriched++;
-              }
-            }
-            if (Object.keys(filled).length > 0) {
-              const src: DataSource = isSourceEnabled('pfaf') ? 'pfaf' : 'naturadb';
-              trackSources(plant, filled, src);
-            }
-          }
-
-          if (isSourceEnabled('wikidata') && !plant.imageUrl) {
-            const searchUrl = new URL('https://www.wikidata.org/w/api.php');
-            searchUrl.searchParams.set('action', 'wbsearchentities');
-            searchUrl.searchParams.set('search', plant.latinName);
-            searchUrl.searchParams.set('language', 'en');
-            searchUrl.searchParams.set('type', 'item');
-            searchUrl.searchParams.set('limit', '1');
-            searchUrl.searchParams.set('format', 'json');
-            searchUrl.searchParams.set('origin', '*');
-            const sr = await fetch(searchUrl.toString());
-            if (sr.ok) {
-              const sd = await sr.json();
-              const wdId = sd.search?.[0]?.id;
-              if (wdId) {
-                const details = await fetchPlantDetails(wdId);
-                const filled: Partial<PlantData> = {};
-                for (const [key, value] of Object.entries(details)) {
-                  const cur = (plant as any)[key];
-                  const empty = cur === null || cur === undefined || cur === '' || cur === false;
-                  if (empty && value) { (plant as any)[key] = value; (filled as any)[key] = value; enriched++; }
-                }
-                if (Object.keys(filled).length > 0) trackSources(plant, filled, 'wikidata');
-              }
-            }
-          }
-
+          const enriched = await enrichPlant(plant);
           await savePlant(plant);
           b.textContent = enriched > 0 ? `+${enriched}` : origText;
           setTimeout(() => renderList(), 1200);
@@ -762,6 +771,22 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-bulk-csv')!.addEventListener('click', () => {
     const plants = cachedPlants.filter(p => selectedIds.has(p.id));
     triggerDownload(buildCSV(plants), 'plants-export.csv', 'text/csv;charset=utf-8;');
+  });
+  document.getElementById('btn-bulk-enrich')!.addEventListener('click', async () => {
+    const plants = cachedPlants.filter(p => selectedIds.has(p.id));
+    if (plants.length === 0) return;
+    const btn = document.getElementById('btn-bulk-enrich') as HTMLButtonElement;
+    btn.disabled = true;
+    let done = 0;
+    for (const plant of plants) {
+      btn.textContent = `Ergänzen ${done + 1}/${plants.length}…`;
+      await enrichPlant(plant);
+      await savePlant(plant);
+      done++;
+    }
+    btn.textContent = `✓ ${done} ergänzt`;
+    btn.disabled = false;
+    setTimeout(() => renderList(), 800);
   });
   document.getElementById('btn-bulk-pdf')!.addEventListener('click', async () => {
     const plants = cachedPlants.filter(p => selectedIds.has(p.id));
