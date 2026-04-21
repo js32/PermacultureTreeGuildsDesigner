@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <!-- Fiddlehead: 1.5 turns, wide coil spacing, white on transparent -->
   <polyline
-    points="16,10.5 19.4,13 16,17.3 10.8,13 16,6.9 23,13 16,20.9 16,28"
+    points="16,11 20.1,14 16,19.2 9.7,14 16,6.6 24.5,14 16,23.6 16,27"
     fill="none"
     stroke="white"
     stroke-width="1.5"
     stroke-linecap="round"
     stroke-linejoin="round"/>
-  <circle cx="16" cy="10.5" r="1.2" fill="white"/>
+  <circle cx="16" cy="11" r="1.2" fill="white"/>
 </svg>
