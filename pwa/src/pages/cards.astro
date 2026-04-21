@@ -1,0 +1,308 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Permaculture Guild Designer — Karten">
+  <!-- Header -->
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <h1 class="text-2xl font-bold text-stone-900">Karten</h1>
+    <div class="flex items-center gap-3">
+      <select id="view-mode" class="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-green-500 focus:ring-2 focus:ring-green-500/20 focus:outline-none">
+        <option value="poly">Pflanzenkarten</option>
+        <option value="stripe">Streifenkarten</option>
+      </select>
+      <button id="btn-pdf-all" class="inline-flex items-center gap-2 rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-green-800 focus:ring-2 focus:ring-green-500/20 focus:outline-none">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        PDF exportieren
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading spinner -->
+  <div id="loading" class="flex flex-col items-center justify-center py-16">
+    <div class="h-8 w-8 animate-spin rounded-full border-4 border-green-200 border-t-green-700"></div>
+    <p class="mt-3 text-sm text-stone-500">Karten werden geladen…</p>
+  </div>
+
+  <!-- Empty state -->
+  <div id="no-plants" class="hidden rounded-xl border-2 border-dashed border-stone-300 py-16 text-center">
+    <svg class="mx-auto h-12 w-12 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
+    <p class="mt-3 text-stone-500">Keine Pflanzen vorhanden.</p>
+    <a href="/" class="mt-2 inline-block text-sm font-medium text-green-700 hover:text-green-800 hover:underline">Pflanzen anlegen &rarr;</a>
+  </div>
+
+  <!-- Cards grid -->
+  <div id="cards-container" class="hidden"></div>
+
+  <!-- Edit dialog (same as index page) -->
+  <dialog id="plant-dialog" class="m-auto w-full max-w-2xl rounded-2xl p-0 shadow-2xl backdrop:bg-black/40">
+    <form id="plant-form" method="dialog" class="max-h-[85vh] overflow-y-auto p-6">
+      <h2 class="mb-4 text-lg font-bold text-stone-800">Pflanze bearbeiten</h2>
+      <input type="hidden" id="f-id" />
+      <div class="space-y-4">
+        <fieldset class="rounded-lg border border-stone-200 p-4">
+          <legend class="px-2 text-sm font-semibold text-green-800">Grunddaten</legend>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="block"><span class="text-xs font-medium text-stone-500">Lateinischer Name</span>
+              <input type="text" id="f-latinName" required class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block"><span class="text-xs font-medium text-stone-500">Deutscher Name</span>
+              <input type="text" id="f-commonName" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block"><span class="text-xs font-medium text-stone-500">Höhe (m)</span>
+              <input type="number" id="f-heightM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block"><span class="text-xs font-medium text-stone-500">Breite (m)</span>
+              <input type="number" id="f-widthM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block"><span class="text-xs font-medium text-stone-500">Klimazone</span>
+              <input type="text" id="f-climateZone" placeholder="z.B. 5-9" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block"><span class="text-xs font-medium text-stone-500">Bild-URL</span>
+              <input type="url" id="f-imageUrl" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+          </div>
+        </fieldset>
+        <fieldset class="rounded-lg border border-stone-200 p-4">
+          <legend class="px-2 text-sm font-semibold text-green-800">Nutzung</legend>
+          <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-eatable" class="accent-green-600" /> Essbar</label>
+            <label class="inline-flex items-center gap-1"><span class="text-stone-400">Score</span><input type="number" id="f-eatableScore" min="0" max="5" class="w-12 rounded border border-stone-300 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-culinaric" class="accent-green-600" /> Kulinarisch</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-meds" class="accent-green-600" /> Medizinisch</label>
+            <label class="inline-flex items-center gap-1"><span class="text-stone-400">Score</span><input type="number" id="f-medsScore" min="0" max="5" class="w-12 rounded border border-stone-300 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-material" class="accent-green-600" /> Material</label>
+            <label class="inline-flex items-center gap-1"><span class="text-stone-400">Score</span><input type="number" id="f-materialScore" min="0" max="5" class="w-12 rounded border border-stone-300 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-fodder" class="accent-green-600" /> Futter</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-fuel" class="accent-green-600" /> Brennstoff</label>
+          </div>
+        </fieldset>
+        <fieldset class="rounded-lg border border-stone-200 p-4">
+          <legend class="px-2 text-sm font-semibold text-green-800">Ökosystem</legend>
+          <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-nitrogenFix" class="accent-green-600" /> Stickstoff</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-mineralFix" class="accent-green-600" /> Mineralien</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-groundCover" class="accent-green-600" /> Bodendecker</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-insects" class="accent-green-600" /> Insekten</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-pest" class="accent-green-600" /> Schädling</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-animalProtection" class="accent-green-600" /> Tierschutz</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-windBreaking" class="accent-green-600" /> Windschutz</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-windBreakingOnSea" class="accent-green-600" /> Wind (See)</label>
+          </div>
+        </fieldset>
+        <div class="grid gap-4 sm:grid-cols-3">
+          <fieldset class="rounded-lg border border-stone-200 p-3">
+            <legend class="px-2 text-xs font-semibold text-green-800">Sonne</legend>
+            <div class="flex flex-col gap-1 text-sm">
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-sunFull" class="accent-amber-500" /> Volle Sonne</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-sunMid" class="accent-amber-500" /> Halbschatten</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-sunShadow" class="accent-amber-500" /> Schatten</label>
+            </div>
+          </fieldset>
+          <fieldset class="rounded-lg border border-stone-200 p-3">
+            <legend class="px-2 text-xs font-semibold text-green-800">Wasser</legend>
+            <div class="flex flex-col gap-1 text-sm">
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterDry" class="accent-blue-500" /> Trocken</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterMid" class="accent-blue-500" /> Mittel</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterWet" class="accent-blue-500" /> Nass</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterPlant" class="accent-blue-500" /> Wasserpflanze</label>
+            </div>
+          </fieldset>
+          <fieldset class="rounded-lg border border-stone-200 p-3">
+            <legend class="px-2 text-xs font-semibold text-green-800">Wachstum</legend>
+            <div class="flex flex-col gap-1 text-sm">
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-growSpeedLow" class="accent-green-600" /> Langsam</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-growSpeedMid" class="accent-green-600" /> Mittel</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-growSpeedHigh" class="accent-green-600" /> Schnell</label>
+            </div>
+          </fieldset>
+        </div>
+        <fieldset class="rounded-lg border border-stone-200 p-4">
+          <legend class="px-2 text-sm font-semibold text-green-800">Boden pH</legend>
+          <div class="flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phVeryAcid" class="accent-red-500" /> Sehr sauer</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phAcid" class="accent-yellow-500" /> Sauer</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phNeutral" class="accent-green-500" /> Neutral</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phAlkaline" class="accent-teal-500" /> Alkalisch</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phVeryAlkaline" class="accent-blue-500" /> Sehr alk.</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phSaline" class="accent-purple-500" /> Salin</label>
+          </div>
+        </fieldset>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <fieldset class="rounded-lg border border-stone-200 p-3">
+            <legend class="px-2 text-xs font-semibold text-red-700">Fruchtmonate</legend>
+            <div class="grid grid-cols-6 gap-1 text-xs">
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-0" class="accent-red-500" />Jan</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-1" class="accent-red-500" />Feb</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-2" class="accent-red-500" />Mär</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-3" class="accent-red-500" />Apr</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-4" class="accent-red-500" />Mai</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-5" class="accent-red-500" />Jun</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-6" class="accent-red-500" />Jul</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-7" class="accent-red-500" />Aug</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-8" class="accent-red-500" />Sep</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-9" class="accent-red-500" />Okt</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-10" class="accent-red-500" />Nov</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-11" class="accent-red-500" />Dez</label>
+            </div>
+          </fieldset>
+          <fieldset class="rounded-lg border border-stone-200 p-3">
+            <legend class="px-2 text-xs font-semibold text-pink-700">Blütemonate</legend>
+            <div class="grid grid-cols-6 gap-1 text-xs">
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-0" class="accent-pink-500" />Jan</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-1" class="accent-pink-500" />Feb</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-2" class="accent-pink-500" />Mär</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-3" class="accent-pink-500" />Apr</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-4" class="accent-pink-500" />Mai</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-5" class="accent-pink-500" />Jun</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-6" class="accent-pink-500" />Jul</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-7" class="accent-pink-500" />Aug</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-8" class="accent-pink-500" />Sep</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-9" class="accent-pink-500" />Okt</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-10" class="accent-pink-500" />Nov</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-11" class="accent-pink-500" />Dez</label>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end gap-2">
+        <button type="button" id="btn-cancel" class="rounded-lg px-4 py-2 text-sm font-medium text-stone-600 ring-1 ring-stone-300 transition hover:bg-stone-100">Abbrechen</button>
+        <button type="submit" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Speichern</button>
+      </div>
+    </form>
+  </dialog>
+</Layout>
+
+<script>
+  import { getAllPlants, savePlant } from '../lib/db';
+  import { createEmptyPlant, type PlantData } from '../lib/types';
+  import { renderTemplatePolyCard, renderTemplateStripeCard } from '../lib/svg-template';
+  import { renderPolyCard, renderStripeCard } from '../lib/card-svg';
+
+  const container = document.getElementById('cards-container')!;
+  const noPlants = document.getElementById('no-plants')!;
+  const loading = document.getElementById('loading')!;
+  const viewMode = document.getElementById('view-mode') as HTMLSelectElement;
+  const dialog = document.getElementById('plant-dialog') as HTMLDialogElement;
+  const form = document.getElementById('plant-form') as HTMLFormElement;
+
+  let plants: PlantData[] = [];
+
+  // --- Form helpers (same as index page) ---
+  const textFields = ['latinName', 'commonName', 'climateZone', 'imageUrl'] as const;
+  const numberFields = ['heightM', 'widthM', 'eatableScore', 'medsScore', 'materialScore'] as const;
+  const boolFields = [
+    'eatable', 'culinaric', 'meds', 'material', 'fodder', 'fuel',
+    'nitrogenFix', 'mineralFix', 'groundCover', 'insects', 'pest',
+    'animalProtection', 'windBreaking', 'windBreakingOnSea',
+    'sunFull', 'sunMid', 'sunShadow',
+    'waterDry', 'waterMid', 'waterWet', 'waterPlant',
+    'phVeryAcid', 'phAcid', 'phNeutral', 'phAlkaline', 'phVeryAlkaline', 'phSaline',
+    'growSpeedLow', 'growSpeedMid', 'growSpeedHigh',
+  ] as const;
+
+  function el(id: string) { return document.getElementById(`f-${id}`) as HTMLInputElement; }
+
+  function fillForm(p: PlantData) {
+    el('id').value = p.id;
+    for (const f of textFields) el(f).value = (p[f] as string) || '';
+    for (const f of numberFields) { const v = p[f] as number | null; el(f).value = v != null ? String(v) : ''; }
+    for (const f of boolFields) el(f).checked = p[f] as boolean;
+    for (let i = 0; i < 12; i++) { el(`fruit-${i}`).checked = p.fruitMonths[i]; el(`flower-${i}`).checked = p.flowerMonths[i]; }
+  }
+
+  function readForm(): PlantData {
+    const p = createEmptyPlant();
+    p.id = el('id').value || p.id;
+    for (const f of textFields) (p as any)[f] = el(f).value;
+    for (const f of numberFields) { const v = el(f).value; (p as any)[f] = v ? parseFloat(v) : null; }
+    for (const f of boolFields) (p as any)[f] = el(f).checked;
+    for (let i = 0; i < 12; i++) { p.fruitMonths[i] = el(`fruit-${i}`).checked; p.flowerMonths[i] = el(`flower-${i}`).checked; }
+    return p;
+  }
+
+  // --- Init & Render ---
+  async function init() {
+    plants = await getAllPlants();
+    loading.classList.add('hidden');
+
+    if (plants.length === 0) {
+      noPlants.classList.remove('hidden');
+      return;
+    }
+
+    container.classList.remove('hidden');
+    await render();
+  }
+
+  async function render() {
+    const mode = viewMode.value;
+    container.className = mode === 'stripe'
+      ? 'flex flex-col items-stretch gap-4'
+      : 'flex flex-wrap justify-center gap-6';
+
+    container.innerHTML = '<div class="flex w-full items-center justify-center py-8"><div class="h-6 w-6 animate-spin rounded-full border-4 border-green-200 border-t-green-700"></div></div>';
+
+    const cards = await Promise.all(plants.map(async (p) => {
+      try {
+        return mode === 'stripe'
+          ? await renderTemplateStripeCard(p)
+          : await renderTemplatePolyCard(p);
+      } catch {
+        return mode === 'stripe' ? renderStripeCard(p) : renderPolyCard(p);
+      }
+    }));
+
+    container.innerHTML = cards.map((svg, i) => `
+      <div class="group relative rounded-xl bg-white p-3 shadow-md ring-1 ring-stone-200 transition hover:shadow-lg hover:ring-green-300" data-index="${i}">
+        <div class="pointer-events-none [&_svg]:max-w-full [&_svg]:h-auto">${svg}</div>
+        <div class="relative z-10 mt-2 flex items-center justify-between">
+          <span class="text-xs text-stone-400">${plants[i].commonName || plants[i].latinName}</span>
+          <div class="flex gap-1.5">
+            <button class="btn-edit-card inline-flex items-center gap-1 rounded-md bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-600 transition hover:bg-blue-100 hover:text-blue-800">
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+              Bearb.
+            </button>
+            <button class="btn-pdf-single inline-flex items-center gap-1 rounded-md bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-600 transition hover:bg-green-100 hover:text-green-800">
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              PDF
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Attach event listeners
+    container.querySelectorAll('.btn-pdf-single').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const idx = parseInt((btn.closest('[data-index]') as HTMLElement).dataset.index!);
+        const { exportSingleCardPDF } = await import('../lib/pdf-export');
+        await exportSingleCardPDF(plants[idx]);
+      });
+    });
+
+    container.querySelectorAll('.btn-edit-card').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt((btn.closest('[data-index]') as HTMLElement).dataset.index!);
+        fillForm(plants[idx]);
+        dialog.showModal();
+      });
+    });
+  }
+
+  // --- Dialog handlers ---
+  document.getElementById('btn-cancel')!.addEventListener('click', () => dialog.close());
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const updated = readForm();
+    await savePlant(updated);
+    dialog.close();
+    // Refresh data and re-render cards
+    plants = await getAllPlants();
+    await render();
+  });
+
+  viewMode.addEventListener('change', () => render());
+
+  document.getElementById('btn-pdf-all')!.addEventListener('click', async () => {
+    if (plants.length === 0) return;
+    const { exportCardsPDF } = await import('../lib/pdf-export');
+    await exportCardsPDF(plants);
+  });
+
+  init();
+</script>

@@ -1,0 +1,452 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Guild Designer — Pflanzen">
+  <!-- Search -->
+  <section class="mb-8 rounded-xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
+    <label for="plant-search" class="mb-1 block text-sm font-semibold text-stone-700">Pflanze suchen <span class="font-normal text-stone-400">(Wikidata)</span></label>
+    <div class="flex gap-2">
+      <input type="text" id="plant-search" placeholder="z.B. Acer, Beinwell, Symphytum..."
+        class="flex-1 rounded-lg border border-stone-300 px-3 py-2 text-sm shadow-inner transition focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" autocomplete="off" />
+      <button id="btn-search" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Suchen</button>
+    </div>
+    <div id="search-results" class="mt-3 divide-y divide-stone-100"></div>
+  </section>
+
+  <!-- Actions -->
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <h1 class="text-xl font-bold text-stone-800">Pflanzenliste</h1>
+    <div class="flex flex-wrap gap-2">
+      <button id="btn-add" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Pflanze</button>
+      <button id="btn-import" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Import JSON</button>
+      <button id="btn-import-csv" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Import CSV</button>
+      <button id="btn-export" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Export</button>
+      <button id="btn-load-samples" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Beispieldaten</button>
+    </div>
+  </div>
+
+  <!-- Plant list -->
+  <div id="plant-list" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+
+  <!-- Edit dialog -->
+  <dialog id="plant-dialog" class="m-auto w-full max-w-2xl rounded-2xl p-0 shadow-2xl backdrop:bg-black/40">
+    <form id="plant-form" method="dialog" class="max-h-[85vh] overflow-y-auto p-6">
+      <h2 id="dialog-title" class="mb-4 text-lg font-bold text-stone-800">Pflanze bearbeiten</h2>
+      <input type="hidden" id="f-id" />
+
+      <div class="space-y-4">
+        <!-- Grunddaten -->
+        <fieldset class="rounded-lg border border-stone-200 p-4">
+          <legend class="px-2 text-sm font-semibold text-green-800">Grunddaten</legend>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="block"><span class="text-xs font-medium text-stone-500">Lateinischer Name</span>
+              <input type="text" id="f-latinName" required class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block"><span class="text-xs font-medium text-stone-500">Deutscher Name</span>
+              <input type="text" id="f-commonName" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block"><span class="text-xs font-medium text-stone-500">Höhe (m)</span>
+              <input type="number" id="f-heightM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block"><span class="text-xs font-medium text-stone-500">Breite (m)</span>
+              <input type="number" id="f-widthM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block"><span class="text-xs font-medium text-stone-500">Klimazone</span>
+              <input type="text" id="f-climateZone" placeholder="z.B. 5-9" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block"><span class="text-xs font-medium text-stone-500">Bild-URL</span>
+              <input type="url" id="f-imageUrl" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+          </div>
+        </fieldset>
+
+        <!-- Nutzung -->
+        <fieldset class="rounded-lg border border-stone-200 p-4">
+          <legend class="px-2 text-sm font-semibold text-green-800">Nutzung</legend>
+          <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-eatable" class="accent-green-600" /> Essbar</label>
+            <label class="inline-flex items-center gap-1"><span class="text-stone-400">Score</span><input type="number" id="f-eatableScore" min="0" max="5" class="w-12 rounded border border-stone-300 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-culinaric" class="accent-green-600" /> Kulinarisch</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-meds" class="accent-green-600" /> Medizinisch</label>
+            <label class="inline-flex items-center gap-1"><span class="text-stone-400">Score</span><input type="number" id="f-medsScore" min="0" max="5" class="w-12 rounded border border-stone-300 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-material" class="accent-green-600" /> Material</label>
+            <label class="inline-flex items-center gap-1"><span class="text-stone-400">Score</span><input type="number" id="f-materialScore" min="0" max="5" class="w-12 rounded border border-stone-300 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-fodder" class="accent-green-600" /> Futter</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-fuel" class="accent-green-600" /> Brennstoff</label>
+          </div>
+        </fieldset>
+
+        <!-- Ökosystem -->
+        <fieldset class="rounded-lg border border-stone-200 p-4">
+          <legend class="px-2 text-sm font-semibold text-green-800">Ökosystem</legend>
+          <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-nitrogenFix" class="accent-green-600" /> Stickstoff</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-mineralFix" class="accent-green-600" /> Mineralien</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-groundCover" class="accent-green-600" /> Bodendecker</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-insects" class="accent-green-600" /> Insekten</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-pest" class="accent-green-600" /> Schädling</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-animalProtection" class="accent-green-600" /> Tierschutz</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-windBreaking" class="accent-green-600" /> Windschutz</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-windBreakingOnSea" class="accent-green-600" /> Wind (See)</label>
+          </div>
+        </fieldset>
+
+        <!-- Sonne + Wasser + Wachstum in one row -->
+        <div class="grid gap-4 sm:grid-cols-3">
+          <fieldset class="rounded-lg border border-stone-200 p-3">
+            <legend class="px-2 text-xs font-semibold text-green-800">Sonne</legend>
+            <div class="flex flex-col gap-1 text-sm">
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-sunFull" class="accent-amber-500" /> Volle Sonne</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-sunMid" class="accent-amber-500" /> Halbschatten</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-sunShadow" class="accent-amber-500" /> Schatten</label>
+            </div>
+          </fieldset>
+          <fieldset class="rounded-lg border border-stone-200 p-3">
+            <legend class="px-2 text-xs font-semibold text-green-800">Wasser</legend>
+            <div class="flex flex-col gap-1 text-sm">
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterDry" class="accent-blue-500" /> Trocken</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterMid" class="accent-blue-500" /> Mittel</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterWet" class="accent-blue-500" /> Nass</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterPlant" class="accent-blue-500" /> Wasserpflanze</label>
+            </div>
+          </fieldset>
+          <fieldset class="rounded-lg border border-stone-200 p-3">
+            <legend class="px-2 text-xs font-semibold text-green-800">Wachstum</legend>
+            <div class="flex flex-col gap-1 text-sm">
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-growSpeedLow" class="accent-green-600" /> Langsam</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-growSpeedMid" class="accent-green-600" /> Mittel</label>
+              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-growSpeedHigh" class="accent-green-600" /> Schnell</label>
+            </div>
+          </fieldset>
+        </div>
+
+        <!-- pH -->
+        <fieldset class="rounded-lg border border-stone-200 p-4">
+          <legend class="px-2 text-sm font-semibold text-green-800">Boden pH</legend>
+          <div class="flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phVeryAcid" class="accent-red-500" /> Sehr sauer</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phAcid" class="accent-yellow-500" /> Sauer</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phNeutral" class="accent-green-500" /> Neutral</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phAlkaline" class="accent-teal-500" /> Alkalisch</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phVeryAlkaline" class="accent-blue-500" /> Sehr alk.</label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phSaline" class="accent-purple-500" /> Salin</label>
+          </div>
+        </fieldset>
+
+        <!-- Monate -->
+        <div class="grid gap-4 sm:grid-cols-2">
+          <fieldset class="rounded-lg border border-stone-200 p-3">
+            <legend class="px-2 text-xs font-semibold text-red-700">Fruchtmonate</legend>
+            <div class="grid grid-cols-6 gap-1 text-xs">
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-0" class="accent-red-500" />Jan</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-1" class="accent-red-500" />Feb</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-2" class="accent-red-500" />Mär</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-3" class="accent-red-500" />Apr</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-4" class="accent-red-500" />Mai</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-5" class="accent-red-500" />Jun</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-6" class="accent-red-500" />Jul</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-7" class="accent-red-500" />Aug</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-8" class="accent-red-500" />Sep</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-9" class="accent-red-500" />Okt</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-10" class="accent-red-500" />Nov</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-11" class="accent-red-500" />Dez</label>
+            </div>
+          </fieldset>
+          <fieldset class="rounded-lg border border-stone-200 p-3">
+            <legend class="px-2 text-xs font-semibold text-pink-700">Blütemonate</legend>
+            <div class="grid grid-cols-6 gap-1 text-xs">
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-0" class="accent-pink-500" />Jan</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-1" class="accent-pink-500" />Feb</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-2" class="accent-pink-500" />Mär</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-3" class="accent-pink-500" />Apr</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-4" class="accent-pink-500" />Mai</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-5" class="accent-pink-500" />Jun</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-6" class="accent-pink-500" />Jul</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-7" class="accent-pink-500" />Aug</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-8" class="accent-pink-500" />Sep</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-9" class="accent-pink-500" />Okt</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-10" class="accent-pink-500" />Nov</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-11" class="accent-pink-500" />Dez</label>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <div class="mt-5 flex justify-end gap-2">
+        <button type="button" id="btn-cancel" class="rounded-lg px-4 py-2 text-sm font-medium text-stone-600 ring-1 ring-stone-300 transition hover:bg-stone-100">Abbrechen</button>
+        <button type="submit" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Speichern</button>
+      </div>
+    </form>
+  </dialog>
+
+  <input type="file" id="file-import" accept=".json" class="hidden" />
+  <input type="file" id="file-import-csv" accept=".csv,.txt" class="hidden" />
+</Layout>
+
+<script>
+  import { getAllPlants, savePlant, deletePlant, importPlants } from '../lib/db';
+  import { createEmptyPlant, type PlantData } from '../lib/types';
+  import { samplePlants } from '../lib/sample-data';
+  import { importFromCSV } from '../lib/csv-import';
+  import { validatePlant } from '../lib/validate';
+  import { searchPlants, importPlantFromSearch, fetchProxyData, fetchPlantDetails } from '../lib/plant-search';
+  import { isSourceEnabled } from '../lib/settings';
+
+  const listEl = document.getElementById('plant-list')!;
+  const dialog = document.getElementById('plant-dialog') as HTMLDialogElement;
+  const form = document.getElementById('plant-form') as HTMLFormElement;
+  const fileInput = document.getElementById('file-import') as HTMLInputElement;
+  const csvInput = document.getElementById('file-import-csv') as HTMLInputElement;
+
+  const textFields = ['latinName', 'commonName', 'climateZone', 'imageUrl'] as const;
+  const numberFields = ['heightM', 'widthM', 'eatableScore', 'medsScore', 'materialScore'] as const;
+  const boolFields = [
+    'eatable', 'culinaric', 'meds', 'material', 'fodder', 'fuel',
+    'nitrogenFix', 'mineralFix', 'groundCover', 'insects', 'pest',
+    'animalProtection', 'windBreaking', 'windBreakingOnSea',
+    'sunFull', 'sunMid', 'sunShadow',
+    'waterDry', 'waterMid', 'waterWet', 'waterPlant',
+    'phVeryAcid', 'phAcid', 'phNeutral', 'phAlkaline', 'phVeryAlkaline', 'phSaline',
+    'growSpeedLow', 'growSpeedMid', 'growSpeedHigh',
+  ] as const;
+
+  function el(id: string) { return document.getElementById(`f-${id}`) as HTMLInputElement; }
+
+  function fillForm(p: PlantData) {
+    el('id').value = p.id;
+    for (const f of textFields) el(f).value = (p[f] as string) || '';
+    for (const f of numberFields) { const v = p[f] as number | null; el(f).value = v != null ? String(v) : ''; }
+    for (const f of boolFields) el(f).checked = p[f] as boolean;
+    for (let i = 0; i < 12; i++) { el(`fruit-${i}`).checked = p.fruitMonths[i]; el(`flower-${i}`).checked = p.flowerMonths[i]; }
+  }
+
+  function readForm(): PlantData {
+    const p = createEmptyPlant();
+    p.id = el('id').value || p.id;
+    for (const f of textFields) (p as any)[f] = el(f).value;
+    for (const f of numberFields) { const v = el(f).value; (p as any)[f] = v ? parseFloat(v) : null; }
+    for (const f of boolFields) (p as any)[f] = el(f).checked;
+    for (let i = 0; i < 12; i++) { p.fruitMonths[i] = el(`fruit-${i}`).checked; p.flowerMonths[i] = el(`flower-${i}`).checked; }
+    return p;
+  }
+
+  function badges(p: PlantData): string {
+    const b: [boolean, string, string][] = [
+      [p.eatable, 'bg-green-100 text-green-800', 'Essbar'],
+      [p.meds, 'bg-red-100 text-red-700', 'Medizin'],
+      [p.nitrogenFix, 'bg-lime-100 text-lime-800', 'N-Fix'],
+      [p.groundCover, 'bg-orange-100 text-orange-800', 'Bodendecker'],
+      [p.insects, 'bg-yellow-100 text-yellow-800', 'Insekten'],
+      [p.windBreaking, 'bg-pink-100 text-pink-800', 'Windschutz'],
+    ];
+    return b.filter(([a]) => a).map(([,c,l]) => `<span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium ${c}">${l}</span>`).join(' ');
+  }
+
+  async function renderList() {
+    const plants = await getAllPlants();
+    if (plants.length === 0) {
+      listEl.innerHTML = '<div class="col-span-full py-16 text-center text-stone-400">Keine Pflanzen vorhanden. Erstelle eine neue oder lade Beispieldaten.</div>';
+      return;
+    }
+    listEl.innerHTML = plants.map(p => {
+      const v = validatePlant(p);
+      return `
+      <div class="group relative rounded-xl bg-white p-4 shadow-sm ring-1 ring-stone-200 transition hover:shadow-md hover:ring-green-300" data-id="${p.id}">
+        <div class="mb-2 flex items-start justify-between gap-2">
+          <div class="min-w-0">
+            <h3 class="truncate text-sm font-bold text-stone-800">${p.commonName || p.latinName}</h3>
+            <p class="truncate text-xs italic text-stone-500">${p.latinName}</p>
+          </div>
+          <div class="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100">
+            <button class="btn-enrich rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100" title="Daten von PFAF/NaturaDB ergänzen">Ergänzen</button>
+            <button class="btn-edit rounded-md bg-stone-100 px-2 py-1 text-xs font-medium text-stone-600 hover:bg-stone-200">Bearb.</button>
+            <button class="btn-del rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100">X</button>
+          </div>
+        </div>
+        <div class="mb-2 flex gap-3 text-xs text-stone-500">
+          ${p.heightM != null ? `<span>↕ ${p.heightM}m</span>` : ''}
+          ${p.widthM != null ? `<span>↔ ${p.widthM}m</span>` : ''}
+          ${p.climateZone ? `<span>Zone ${p.climateZone}</span>` : ''}
+        </div>
+        <div class="flex flex-wrap gap-1">${badges(p)}</div>
+        ${!v.complete ? `<p class="mt-2 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-700">Fehlt: ${v.missing.join(', ')}</p>` : ''}
+      </div>`;
+    }).join('');
+
+    listEl.querySelectorAll('.btn-enrich').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const card = btn.closest('[data-id]') as HTMLElement;
+        const id = card.dataset.id!;
+        const plant = (await getAllPlants()).find(p => p.id === id);
+        if (!plant || !plant.latinName) { alert('Lateinischer Name fehlt.'); return; }
+        const b = btn as HTMLButtonElement;
+        b.disabled = true; b.textContent = 'Lade...';
+        try {
+          let enriched = 0;
+          // Proxy: PFAF + NaturaDB
+          if (isSourceEnabled('pfaf') || isSourceEnabled('naturadb')) {
+            const proxyData = await fetchProxyData(plant.latinName);
+            for (const [key, value] of Object.entries(proxyData)) {
+              const current = (plant as any)[key];
+              const isEmpty = current === null || current === undefined || current === '' || current === false ||
+                (Array.isArray(current) && current.every((v: boolean) => !v));
+              if (isEmpty && value !== null && value !== undefined && value !== '' && value !== false) {
+                (plant as any)[key] = value;
+                enriched++;
+              }
+            }
+          }
+          // Wikidata (image, dimensions)
+          if (isSourceEnabled('wikidata') && !plant.imageUrl) {
+            // Quick search to find the Wikidata ID
+            const searchUrl = new URL('https://www.wikidata.org/w/api.php');
+            searchUrl.searchParams.set('action', 'wbsearchentities');
+            searchUrl.searchParams.set('search', plant.latinName);
+            searchUrl.searchParams.set('language', 'en');
+            searchUrl.searchParams.set('type', 'item');
+            searchUrl.searchParams.set('limit', '1');
+            searchUrl.searchParams.set('format', 'json');
+            searchUrl.searchParams.set('origin', '*');
+            const sr = await fetch(searchUrl.toString());
+            if (sr.ok) {
+              const sd = await sr.json();
+              const wdId = sd.search?.[0]?.id;
+              if (wdId) {
+                const details = await fetchPlantDetails(wdId);
+                for (const [key, value] of Object.entries(details)) {
+                  const current = (plant as any)[key];
+                  const isEmpty = current === null || current === undefined || current === '' || current === false;
+                  if (isEmpty && value) { (plant as any)[key] = value; enriched++; }
+                }
+              }
+            }
+          }
+          await savePlant(plant);
+          b.textContent = enriched > 0 ? `+${enriched} Felder` : 'Nichts Neues';
+          b.classList.replace('bg-blue-50', enriched > 0 ? 'bg-green-50' : 'bg-stone-50');
+          b.classList.replace('text-blue-700', enriched > 0 ? 'text-green-700' : 'text-stone-500');
+          setTimeout(() => renderList(), 1500);
+        } catch (e) {
+          b.textContent = 'Fehler'; b.classList.replace('bg-blue-50','bg-red-50'); b.classList.replace('text-blue-700','text-red-600');
+        }
+      });
+    });
+    listEl.querySelectorAll('.btn-edit').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
+        const plant = (await getAllPlants()).find(p => p.id === id);
+        if (plant) { (document.getElementById('dialog-title') as HTMLElement).textContent = 'Pflanze bearbeiten'; fillForm(plant); dialog.showModal(); }
+      });
+    });
+    listEl.querySelectorAll('.btn-del').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
+        if (confirm('Pflanze löschen?')) { await deletePlant(id); renderList(); }
+      });
+    });
+  }
+
+  document.getElementById('btn-add')!.addEventListener('click', () => {
+    (document.getElementById('dialog-title') as HTMLElement).textContent = 'Neue Pflanze';
+    fillForm(createEmptyPlant()); dialog.showModal();
+  });
+  document.getElementById('btn-cancel')!.addEventListener('click', () => dialog.close());
+  form.addEventListener('submit', async (e) => { e.preventDefault(); await savePlant(readForm()); dialog.close(); renderList(); });
+  document.getElementById('btn-load-samples')!.addEventListener('click', async () => { await importPlants(samplePlants); renderList(); });
+  document.getElementById('btn-export')!.addEventListener('click', async () => {
+    const b = new Blob([JSON.stringify(await getAllPlants(), null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'plants.json'; a.click();
+  });
+  document.getElementById('btn-import')!.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async () => { const f = fileInput.files?.[0]; if (!f) return; await importPlants(JSON.parse(await f.text())); renderList(); fileInput.value = ''; });
+
+  document.getElementById('btn-import-csv')!.addEventListener('click', () => csvInput.click());
+  csvInput.addEventListener('change', async () => {
+    const f = csvInput.files?.[0]; if (!f) return;
+    const plants = importFromCSV(await f.text());
+    if (plants.length === 0) { alert('Keine Pflanzen in der CSV gefunden.'); return; }
+    await importPlants(plants); renderList(); csvInput.value = '';
+  });
+
+  // --- Live search ---
+  const searchInput = document.getElementById('plant-search') as HTMLInputElement;
+  const searchResults = document.getElementById('search-results')!;
+  let searchTimeout: ReturnType<typeof setTimeout>;
+
+  async function doSearch() {
+    const q = searchInput.value.trim();
+    if (q.length < 2) { searchResults.innerHTML = ''; return; }
+    searchResults.innerHTML = '<p class="py-2 text-sm text-stone-400 animate-pulse">Suche...</p>';
+    try {
+      const results = await searchPlants(q);
+      if (results.length === 0) { searchResults.innerHTML = '<p class="py-2 text-sm text-stone-400">Keine Ergebnisse.</p>'; return; }
+      searchResults.innerHTML = results.map((r, i) => `
+        <div class="flex items-center justify-between gap-3 py-2" data-idx="${i}">
+          <div class="min-w-0">
+            <p class="truncate text-sm font-medium text-stone-800">${r.commonName || r.latinName}</p>
+            ${r.latinName ? `<p class="truncate text-xs italic text-stone-500">${r.latinName}</p>` : ''}
+            ${r.description ? `<p class="truncate text-xs text-stone-400">${r.description}</p>` : ''}
+            <p class="import-status mt-0.5 text-xs text-green-600"></p>
+          </div>
+          <button class="btn-add-result shrink-0 rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Hinzuf.</button>
+        </div>
+      `).join('');
+      searchResults.querySelectorAll('.btn-add-result').forEach((btn, idx) => {
+        btn.addEventListener('click', async () => {
+          const b = btn as HTMLButtonElement;
+          const statusEl = b.closest('[data-idx]')?.querySelector('.import-status') as HTMLElement | null;
+          b.disabled = true;
+          const sources: string[] = [];
+
+          try {
+            const r = results[idx];
+            const plant = createEmptyPlant();
+            plant.latinName = r.latinName;
+            plant.commonName = r.commonName;
+
+            // 1. Wikidata
+            if (r.wikidataId && isSourceEnabled('wikidata')) {
+              b.textContent = 'Wikidata...';
+              const details = await fetchPlantDetails(r.wikidataId);
+              if (Object.keys(details).length > 0) {
+                Object.assign(plant, details);
+                sources.push('Wikidata');
+              }
+            }
+
+            // 2. PFAF + NaturaDB via proxy
+            if (plant.latinName && (isSourceEnabled('pfaf') || isSourceEnabled('naturadb'))) {
+              b.textContent = 'PFAF/NaturaDB...';
+              const proxyData = await fetchProxyData(plant.latinName);
+              let proxyHits = 0;
+              for (const [key, value] of Object.entries(proxyData)) {
+                const current = (plant as any)[key];
+                const isEmpty = current === null || current === undefined || current === '' || current === false ||
+                  (Array.isArray(current) && current.every((v: boolean) => !v));
+                if (isEmpty && value !== null && value !== undefined && value !== '' && value !== false) {
+                  (plant as any)[key] = value;
+                  proxyHits++;
+                }
+              }
+              if (proxyHits > 0) {
+                if (isSourceEnabled('pfaf')) sources.push('PFAF');
+                if (isSourceEnabled('naturadb')) sources.push('NaturaDB');
+              }
+            }
+
+            plant.id = crypto.randomUUID();
+            await savePlant(plant);
+            renderList();
+
+            b.textContent = '✓';
+            b.classList.replace('bg-green-700','bg-green-500');
+            if (statusEl) statusEl.textContent = sources.length > 0 ? `Quellen: ${sources.join(', ')}` : '';
+          } catch {
+            b.textContent = 'Fehler';
+            b.classList.replace('bg-green-700','bg-red-500');
+          }
+        });
+      });
+    } catch (err) { searchResults.innerHTML = `<p class="py-2 text-sm text-red-500">Fehler: ${err}</p>`; }
+  }
+
+  document.getElementById('btn-search')!.addEventListener('click', doSearch);
+  searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
+  searchInput.addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(doSearch, 300); });
+
+  renderList();
+</script>
