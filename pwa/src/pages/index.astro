@@ -14,7 +14,7 @@ import Layout from '../layouts/Layout.astro';
   </section>
 
   <!-- Actions -->
-  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <h1 class="text-xl font-bold text-stone-800">Pflanzenliste</h1>
     <div class="flex flex-wrap gap-2">
       <button id="btn-add" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Pflanze</button>
@@ -22,7 +22,20 @@ import Layout from '../layouts/Layout.astro';
       <button id="btn-import-csv" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Import CSV</button>
       <button id="btn-export" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Export</button>
       <button id="btn-load-samples" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200">Beispieldaten</button>
+      <button id="btn-view-toggle" class="rounded-lg bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-200" title="Kachel-/Listenansicht">☰ Liste</button>
     </div>
+  </div>
+
+  <!-- Bulk bar (hidden until items selected in list view) -->
+  <div id="bulk-bar" style="display:none" class="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-stone-100 px-4 py-2.5 text-sm ring-1 ring-stone-200">
+    <span id="bulk-count" class="font-medium text-stone-700">0 ausgewählt</span>
+    <button id="btn-select-all" class="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50">Alle</button>
+    <button id="btn-deselect" class="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50">Abwählen</button>
+    <span class="h-4 w-px bg-stone-300"></span>
+    <button id="btn-bulk-delete" class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-200">Löschen</button>
+    <button id="btn-bulk-json" class="rounded-lg bg-stone-200 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-300">JSON</button>
+    <button id="btn-bulk-csv" class="rounded-lg bg-stone-200 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-300">CSV</button>
+    <button id="btn-bulk-pdf" class="rounded-lg bg-stone-200 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-300">PDF</button>
   </div>
 
   <!-- Plant list -->
@@ -39,17 +52,17 @@ import Layout from '../layouts/Layout.astro';
         <fieldset class="rounded-lg border border-stone-200 p-4">
           <legend class="px-2 text-sm font-semibold text-green-800">Grunddaten</legend>
           <div class="grid gap-3 sm:grid-cols-2">
-            <label class="block"><span class="text-xs font-medium text-stone-500">Lateinischer Name</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500" data-field="latinName">Lateinischer Name</span>
               <input type="text" id="f-latinName" required class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500">Deutscher Name</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500" data-field="commonName">Deutscher Name</span>
               <input type="text" id="f-commonName" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500">Höhe (m)</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500" data-field="heightM">Höhe (m)</span>
               <input type="number" id="f-heightM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500">Breite (m)</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500" data-field="widthM">Breite (m)</span>
               <input type="number" id="f-widthM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500">Klimazone</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500" data-field="climateZone">Klimazone</span>
               <input type="text" id="f-climateZone" placeholder="z.B. 5-9" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500">Bild-URL</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500" data-field="imageUrl">Bild-URL</span>
               <input type="url" id="f-imageUrl" class="mt-0.5 block w-full rounded-md border border-stone-300 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
           </div>
         </fieldset>
@@ -58,15 +71,15 @@ import Layout from '../layouts/Layout.astro';
         <fieldset class="rounded-lg border border-stone-200 p-4">
           <legend class="px-2 text-sm font-semibold text-green-800">Nutzung</legend>
           <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-eatable" class="accent-green-600" /> Essbar</label>
-            <label class="inline-flex items-center gap-1"><span class="text-stone-400">Score</span><input type="number" id="f-eatableScore" min="0" max="5" class="w-12 rounded border border-stone-300 px-1.5 py-0.5 text-xs" /></label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-culinaric" class="accent-green-600" /> Kulinarisch</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-meds" class="accent-green-600" /> Medizinisch</label>
-            <label class="inline-flex items-center gap-1"><span class="text-stone-400">Score</span><input type="number" id="f-medsScore" min="0" max="5" class="w-12 rounded border border-stone-300 px-1.5 py-0.5 text-xs" /></label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-material" class="accent-green-600" /> Material</label>
-            <label class="inline-flex items-center gap-1"><span class="text-stone-400">Score</span><input type="number" id="f-materialScore" min="0" max="5" class="w-12 rounded border border-stone-300 px-1.5 py-0.5 text-xs" /></label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-fodder" class="accent-green-600" /> Futter</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-fuel" class="accent-green-600" /> Brennstoff</label>
+            <label class="inline-flex items-center gap-1.5" data-field="eatable"><input type="checkbox" id="f-eatable" class="accent-green-600" /> Essbar</label>
+            <label class="inline-flex items-center gap-1" data-field="eatableScore"><span class="text-stone-400">Score</span><input type="number" id="f-eatableScore" min="0" max="5" class="w-12 rounded border border-stone-300 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1.5" data-field="culinaric"><input type="checkbox" id="f-culinaric" class="accent-green-600" /> Kulinarisch</label>
+            <label class="inline-flex items-center gap-1.5" data-field="meds"><input type="checkbox" id="f-meds" class="accent-green-600" /> Medizinisch</label>
+            <label class="inline-flex items-center gap-1" data-field="medsScore"><span class="text-stone-400">Score</span><input type="number" id="f-medsScore" min="0" max="5" class="w-12 rounded border border-stone-300 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1.5" data-field="material"><input type="checkbox" id="f-material" class="accent-green-600" /> Material</label>
+            <label class="inline-flex items-center gap-1" data-field="materialScore"><span class="text-stone-400">Score</span><input type="number" id="f-materialScore" min="0" max="5" class="w-12 rounded border border-stone-300 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1.5" data-field="fodder"><input type="checkbox" id="f-fodder" class="accent-green-600" /> Futter</label>
+            <label class="inline-flex items-center gap-1.5" data-field="fuel"><input type="checkbox" id="f-fuel" class="accent-green-600" /> Brennstoff</label>
           </div>
         </fieldset>
 
@@ -74,42 +87,42 @@ import Layout from '../layouts/Layout.astro';
         <fieldset class="rounded-lg border border-stone-200 p-4">
           <legend class="px-2 text-sm font-semibold text-green-800">Ökosystem</legend>
           <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-nitrogenFix" class="accent-green-600" /> Stickstoff</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-mineralFix" class="accent-green-600" /> Mineralien</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-groundCover" class="accent-green-600" /> Bodendecker</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-insects" class="accent-green-600" /> Insekten</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-pest" class="accent-green-600" /> Schädling</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-animalProtection" class="accent-green-600" /> Tierschutz</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-windBreaking" class="accent-green-600" /> Windschutz</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-windBreakingOnSea" class="accent-green-600" /> Wind (See)</label>
+            <label class="inline-flex items-center gap-1.5" data-field="nitrogenFix"><input type="checkbox" id="f-nitrogenFix" class="accent-green-600" /> Stickstoff</label>
+            <label class="inline-flex items-center gap-1.5" data-field="mineralFix"><input type="checkbox" id="f-mineralFix" class="accent-green-600" /> Mineralien</label>
+            <label class="inline-flex items-center gap-1.5" data-field="groundCover"><input type="checkbox" id="f-groundCover" class="accent-green-600" /> Bodendecker</label>
+            <label class="inline-flex items-center gap-1.5" data-field="insects"><input type="checkbox" id="f-insects" class="accent-green-600" /> Insekten</label>
+            <label class="inline-flex items-center gap-1.5" data-field="pest"><input type="checkbox" id="f-pest" class="accent-green-600" /> Schädling</label>
+            <label class="inline-flex items-center gap-1.5" data-field="animalProtection"><input type="checkbox" id="f-animalProtection" class="accent-green-600" /> Tierschutz</label>
+            <label class="inline-flex items-center gap-1.5" data-field="windBreaking"><input type="checkbox" id="f-windBreaking" class="accent-green-600" /> Windschutz</label>
+            <label class="inline-flex items-center gap-1.5" data-field="windBreakingOnSea"><input type="checkbox" id="f-windBreakingOnSea" class="accent-green-600" /> Wind (See)</label>
           </div>
         </fieldset>
 
-        <!-- Sonne + Wasser + Wachstum in one row -->
+        <!-- Sonne + Wasser + Wachstum -->
         <div class="grid gap-4 sm:grid-cols-3">
           <fieldset class="rounded-lg border border-stone-200 p-3">
             <legend class="px-2 text-xs font-semibold text-green-800">Sonne</legend>
             <div class="flex flex-col gap-1 text-sm">
-              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-sunFull" class="accent-amber-500" /> Volle Sonne</label>
-              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-sunMid" class="accent-amber-500" /> Halbschatten</label>
-              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-sunShadow" class="accent-amber-500" /> Schatten</label>
+              <label class="inline-flex items-center gap-1.5" data-field="sunFull"><input type="checkbox" id="f-sunFull" class="accent-amber-500" /> Volle Sonne</label>
+              <label class="inline-flex items-center gap-1.5" data-field="sunMid"><input type="checkbox" id="f-sunMid" class="accent-amber-500" /> Halbschatten</label>
+              <label class="inline-flex items-center gap-1.5" data-field="sunShadow"><input type="checkbox" id="f-sunShadow" class="accent-amber-500" /> Schatten</label>
             </div>
           </fieldset>
           <fieldset class="rounded-lg border border-stone-200 p-3">
             <legend class="px-2 text-xs font-semibold text-green-800">Wasser</legend>
             <div class="flex flex-col gap-1 text-sm">
-              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterDry" class="accent-blue-500" /> Trocken</label>
-              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterMid" class="accent-blue-500" /> Mittel</label>
-              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterWet" class="accent-blue-500" /> Nass</label>
-              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterPlant" class="accent-blue-500" /> Wasserpflanze</label>
+              <label class="inline-flex items-center gap-1.5" data-field="waterDry"><input type="checkbox" id="f-waterDry" class="accent-blue-500" /> Trocken</label>
+              <label class="inline-flex items-center gap-1.5" data-field="waterMid"><input type="checkbox" id="f-waterMid" class="accent-blue-500" /> Mittel</label>
+              <label class="inline-flex items-center gap-1.5" data-field="waterWet"><input type="checkbox" id="f-waterWet" class="accent-blue-500" /> Nass</label>
+              <label class="inline-flex items-center gap-1.5" data-field="waterPlant"><input type="checkbox" id="f-waterPlant" class="accent-blue-500" /> Wasserpflanze</label>
             </div>
           </fieldset>
           <fieldset class="rounded-lg border border-stone-200 p-3">
             <legend class="px-2 text-xs font-semibold text-green-800">Wachstum</legend>
             <div class="flex flex-col gap-1 text-sm">
-              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-growSpeedLow" class="accent-green-600" /> Langsam</label>
-              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-growSpeedMid" class="accent-green-600" /> Mittel</label>
-              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-growSpeedHigh" class="accent-green-600" /> Schnell</label>
+              <label class="inline-flex items-center gap-1.5" data-field="growSpeedLow"><input type="checkbox" id="f-growSpeedLow" class="accent-green-600" /> Langsam</label>
+              <label class="inline-flex items-center gap-1.5" data-field="growSpeedMid"><input type="checkbox" id="f-growSpeedMid" class="accent-green-600" /> Mittel</label>
+              <label class="inline-flex items-center gap-1.5" data-field="growSpeedHigh"><input type="checkbox" id="f-growSpeedHigh" class="accent-green-600" /> Schnell</label>
             </div>
           </fieldset>
         </div>
@@ -118,19 +131,19 @@ import Layout from '../layouts/Layout.astro';
         <fieldset class="rounded-lg border border-stone-200 p-4">
           <legend class="px-2 text-sm font-semibold text-green-800">Boden pH</legend>
           <div class="flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phVeryAcid" class="accent-red-500" /> Sehr sauer</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phAcid" class="accent-yellow-500" /> Sauer</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phNeutral" class="accent-green-500" /> Neutral</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phAlkaline" class="accent-teal-500" /> Alkalisch</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phVeryAlkaline" class="accent-blue-500" /> Sehr alk.</label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phSaline" class="accent-purple-500" /> Salin</label>
+            <label class="inline-flex items-center gap-1.5" data-field="phVeryAcid"><input type="checkbox" id="f-phVeryAcid" class="accent-red-500" /> Sehr sauer</label>
+            <label class="inline-flex items-center gap-1.5" data-field="phAcid"><input type="checkbox" id="f-phAcid" class="accent-yellow-500" /> Sauer</label>
+            <label class="inline-flex items-center gap-1.5" data-field="phNeutral"><input type="checkbox" id="f-phNeutral" class="accent-green-500" /> Neutral</label>
+            <label class="inline-flex items-center gap-1.5" data-field="phAlkaline"><input type="checkbox" id="f-phAlkaline" class="accent-teal-500" /> Alkalisch</label>
+            <label class="inline-flex items-center gap-1.5" data-field="phVeryAlkaline"><input type="checkbox" id="f-phVeryAlkaline" class="accent-blue-500" /> Sehr alk.</label>
+            <label class="inline-flex items-center gap-1.5" data-field="phSaline"><input type="checkbox" id="f-phSaline" class="accent-purple-500" /> Salin</label>
           </div>
         </fieldset>
 
         <!-- Monate -->
         <div class="grid gap-4 sm:grid-cols-2">
           <fieldset class="rounded-lg border border-stone-200 p-3">
-            <legend class="px-2 text-xs font-semibold text-red-700">Fruchtmonate</legend>
+            <legend class="px-2 text-xs font-semibold text-red-700" data-field="fruitMonths">Fruchtmonate</legend>
             <div class="grid grid-cols-6 gap-1 text-xs">
               <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-0" class="accent-red-500" />Jan</label>
               <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-1" class="accent-red-500" />Feb</label>
@@ -147,7 +160,7 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </fieldset>
           <fieldset class="rounded-lg border border-stone-200 p-3">
-            <legend class="px-2 text-xs font-semibold text-pink-700">Blütemonate</legend>
+            <legend class="px-2 text-xs font-semibold text-pink-700" data-field="flowerMonths">Blütemonate</legend>
             <div class="grid grid-cols-6 gap-1 text-xs">
               <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-0" class="accent-pink-500" />Jan</label>
               <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-1" class="accent-pink-500" />Feb</label>
@@ -179,18 +192,26 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   import { getAllPlants, savePlant, deletePlant, importPlants } from '../lib/db';
-  import { createEmptyPlant, type PlantData } from '../lib/types';
+  import { createEmptyPlant, type PlantData, type DataSource, SOURCE_LABEL, SOURCE_COLOR } from '../lib/types';
   import { samplePlants } from '../lib/sample-data';
   import { importFromCSV } from '../lib/csv-import';
   import { validatePlant } from '../lib/validate';
-  import { searchPlants, importPlantFromSearch, fetchProxyData, fetchPlantDetails } from '../lib/plant-search';
+  import { searchPlants, fetchProxyData, fetchPlantDetails } from '../lib/plant-search';
   import { isSourceEnabled } from '../lib/settings';
+  import { exportCardsPDF } from '../lib/pdf-export';
 
   const listEl = document.getElementById('plant-list')!;
   const dialog = document.getElementById('plant-dialog') as HTMLDialogElement;
   const form = document.getElementById('plant-form') as HTMLFormElement;
   const fileInput = document.getElementById('file-import') as HTMLInputElement;
   const csvInput = document.getElementById('file-import-csv') as HTMLInputElement;
+  const bulkBar = document.getElementById('bulk-bar')!;
+  const bulkCountEl = document.getElementById('bulk-count')!;
+
+  let viewMode: 'grid' | 'list' = 'grid';
+  let selectedIds = new Set<string>();
+  let editingPlant: PlantData | null = null;
+  let cachedPlants: PlantData[] = [];
 
   const textFields = ['latinName', 'commonName', 'climateZone', 'imageUrl'] as const;
   const numberFields = ['heightM', 'widthM', 'eatableScore', 'medsScore', 'materialScore'] as const;
@@ -206,23 +227,103 @@ import Layout from '../layouts/Layout.astro';
 
   function el(id: string) { return document.getElementById(`f-${id}`) as HTMLInputElement; }
 
+  // ── Source helpers ────────────────────────────────────────────────────────────
+
+  /** Record non-empty fields in data as coming from source. */
+  function trackSources(plant: PlantData, data: Partial<PlantData>, source: DataSource) {
+    if (!plant._sources) plant._sources = {};
+    for (const [key, val] of Object.entries(data) as [keyof PlantData, any][]) {
+      if (key === '_sources' || key === 'id') continue;
+      const isEmpty = val === null || val === undefined || val === '' || val === false ||
+        (Array.isArray(val) && (val as boolean[]).every((v: boolean) => !v));
+      if (!isEmpty) plant._sources[key] = source;
+    }
+  }
+
+  /** Update source badge chips next to each form label with data-field attribute. */
+  function updateFormBadges(plant: PlantData | null) {
+    document.querySelectorAll<HTMLElement>('[data-field]').forEach(fieldEl => {
+      const field = fieldEl.dataset.field as keyof PlantData;
+      const source = plant?._sources?.[field] as DataSource | undefined;
+      fieldEl.querySelector('.src-badge')?.remove();
+      if (source && SOURCE_COLOR[source]) {
+        const badge = document.createElement('span');
+        badge.className = `src-badge ml-1 inline-block rounded px-1 py-px text-[10px] font-semibold leading-none align-middle ${SOURCE_COLOR[source]}`;
+        badge.title = `Quelle: ${SOURCE_LABEL[source]}`;
+        badge.textContent = SOURCE_LABEL[source][0];
+        fieldEl.appendChild(badge);
+      }
+    });
+  }
+
+  /** Compact source summary chips for a plant card. */
+  function sourceSummaryHtml(p: PlantData): string {
+    if (!p._sources) return '';
+    const sources = [...new Set(Object.values(p._sources))] as DataSource[];
+    if (sources.length === 0) return '';
+    const chips = sources
+      .filter(s => SOURCE_COLOR[s])
+      .map(s => `<span class="inline-block rounded px-1 py-px text-[10px] font-semibold ${SOURCE_COLOR[s]}" title="Quelle: ${SOURCE_LABEL[s]}">${SOURCE_LABEL[s]}</span>`)
+      .join(' ');
+    return `<div class="mt-1.5 flex flex-wrap gap-1">${chips}</div>`;
+  }
+
+  // ── Form ─────────────────────────────────────────────────────────────────────
+
   function fillForm(p: PlantData) {
     el('id').value = p.id;
     for (const f of textFields) el(f).value = (p[f] as string) || '';
     for (const f of numberFields) { const v = p[f] as number | null; el(f).value = v != null ? String(v) : ''; }
     for (const f of boolFields) el(f).checked = p[f] as boolean;
     for (let i = 0; i < 12; i++) { el(`fruit-${i}`).checked = p.fruitMonths[i]; el(`flower-${i}`).checked = p.flowerMonths[i]; }
+    updateFormBadges(p);
   }
 
   function readForm(): PlantData {
+    const orig = editingPlant;
     const p = createEmptyPlant();
     p.id = el('id').value || p.id;
-    for (const f of textFields) (p as any)[f] = el(f).value;
-    for (const f of numberFields) { const v = el(f).value; (p as any)[f] = v ? parseFloat(v) : null; }
-    for (const f of boolFields) (p as any)[f] = el(f).checked;
-    for (let i = 0; i < 12; i++) { p.fruitMonths[i] = el(`fruit-${i}`).checked; p.flowerMonths[i] = el(`flower-${i}`).checked; }
+    p._sources = orig?._sources ? { ...orig._sources } : {};
+
+    for (const f of textFields) {
+      const val = el(f).value;
+      (p as any)[f] = val;
+      if (orig && val !== ((orig as any)[f] || '')) p._sources[f as keyof PlantData] = 'manual';
+    }
+    for (const f of numberFields) {
+      const raw = el(f).value;
+      const val = raw ? parseFloat(raw) : null;
+      (p as any)[f] = val;
+      if (orig && val !== (orig as any)[f]) p._sources[f as keyof PlantData] = 'manual';
+    }
+    for (const f of boolFields) {
+      const val = el(f).checked;
+      (p as any)[f] = val;
+      if (orig && val !== (orig as any)[f]) p._sources[f as keyof PlantData] = 'manual';
+    }
+    let fruitChanged = false, flowerChanged = false;
+    for (let i = 0; i < 12; i++) {
+      p.fruitMonths[i] = el(`fruit-${i}`).checked;
+      p.flowerMonths[i] = el(`flower-${i}`).checked;
+      if (orig && p.fruitMonths[i] !== orig.fruitMonths[i]) fruitChanged = true;
+      if (orig && p.flowerMonths[i] !== orig.flowerMonths[i]) flowerChanged = true;
+    }
+    if (fruitChanged) p._sources['fruitMonths'] = 'manual';
+    if (flowerChanged) p._sources['flowerMonths'] = 'manual';
+
+    // New plant: mark all non-empty fields as manually entered
+    if (!orig) {
+      for (const f of textFields) { if ((p as any)[f]) p._sources[f as keyof PlantData] = 'manual'; }
+      for (const f of numberFields) { if ((p as any)[f] != null) p._sources[f as keyof PlantData] = 'manual'; }
+      for (const f of boolFields) { if ((p as any)[f]) p._sources[f as keyof PlantData] = 'manual'; }
+      if (p.fruitMonths.some(Boolean)) p._sources['fruitMonths'] = 'manual';
+      if (p.flowerMonths.some(Boolean)) p._sources['flowerMonths'] = 'manual';
+    }
+
     return p;
   }
+
+  // ── Plant card badges ─────────────────────────────────────────────────────────
 
   function badges(p: PlantData): string {
     const b: [boolean, string, string][] = [
@@ -236,63 +337,193 @@ import Layout from '../layouts/Layout.astro';
     return b.filter(([a]) => a).map(([,c,l]) => `<span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium ${c}">${l}</span>`).join(' ');
   }
 
+  // ── Bulk bar ──────────────────────────────────────────────────────────────────
+
+  function updateBulkBar() {
+    const n = selectedIds.size;
+    if (n === 0 || viewMode === 'grid') {
+      bulkBar.style.display = 'none';
+    } else {
+      bulkBar.style.display = 'flex';
+      bulkCountEl.textContent = `${n} ausgewählt`;
+    }
+  }
+
+  // ── CSV export ────────────────────────────────────────────────────────────────
+
+  function buildCSV(plants: PlantData[]): string {
+    const headers = [
+      'Lateinisch', 'Deutsch', 'Höhe_m', 'Breite_m', 'Klimazone',
+      'Essbar', 'Kulinarisch', 'Medizinisch', 'Material', 'Futter', 'Brennstoff',
+      'N_Fixierung', 'Mineralien', 'Bodendecker', 'Insekten', 'Schädling',
+      'Tierschutz', 'Windschutz', 'Wind_See',
+      'Sonne_voll', 'Halbschatten', 'Schatten',
+      'Wasser_trocken', 'Wasser_mittel', 'Wasser_nass', 'Wasserpflanze',
+      'pH_sehr_sauer', 'pH_sauer', 'pH_neutral', 'pH_alkalisch', 'pH_sehr_alk', 'pH_salin',
+      'Wachstum_langsam', 'Wachstum_mittel', 'Wachstum_schnell', 'Bild_URL',
+    ];
+    const b = (v: boolean) => v ? '1' : '0';
+    const q = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
+    const rows = plants.map(p => [
+      q(p.latinName), q(p.commonName), p.heightM ?? '', p.widthM ?? '', q(p.climateZone),
+      b(p.eatable), b(p.culinaric), b(p.meds), b(p.material), b(p.fodder), b(p.fuel),
+      b(p.nitrogenFix), b(p.mineralFix), b(p.groundCover), b(p.insects), b(p.pest),
+      b(p.animalProtection), b(p.windBreaking), b(p.windBreakingOnSea),
+      b(p.sunFull), b(p.sunMid), b(p.sunShadow),
+      b(p.waterDry), b(p.waterMid), b(p.waterWet), b(p.waterPlant),
+      b(p.phVeryAcid), b(p.phAcid), b(p.phNeutral), b(p.phAlkaline), b(p.phVeryAlkaline), b(p.phSaline),
+      b(p.growSpeedLow), b(p.growSpeedMid), b(p.growSpeedHigh), q(p.imageUrl),
+    ].join(','));
+    return [headers.join(','), ...rows].join('\r\n');
+  }
+
+  function triggerDownload(content: string, filename: string, type: string) {
+    const blob = new Blob([content], { type });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // ── renderList ────────────────────────────────────────────────────────────────
+
   async function renderList() {
-    const plants = await getAllPlants();
-    if (plants.length === 0) {
+    cachedPlants = await getAllPlants();
+
+    if (cachedPlants.length === 0) {
+      listEl.className = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3';
       listEl.innerHTML = '<div class="col-span-full py-16 text-center text-stone-400">Keine Pflanzen vorhanden. Erstelle eine neue oder lade Beispieldaten.</div>';
       return;
     }
-    listEl.innerHTML = plants.map(p => {
-      const v = validatePlant(p);
-      return `
-      <div class="group relative rounded-xl bg-white p-4 shadow-sm ring-1 ring-stone-200 transition hover:shadow-md hover:ring-green-300" data-id="${p.id}">
-        <div class="mb-2 flex items-start justify-between gap-2">
-          <div class="min-w-0">
-            <h3 class="truncate text-sm font-bold text-stone-800">${p.commonName || p.latinName}</h3>
-            <p class="truncate text-xs italic text-stone-500">${p.latinName}</p>
-          </div>
-          <div class="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100">
-            <button class="btn-enrich rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100" title="Daten von PFAF/NaturaDB ergänzen">Ergänzen</button>
-            <button class="btn-edit rounded-md bg-stone-100 px-2 py-1 text-xs font-medium text-stone-600 hover:bg-stone-200">Bearb.</button>
-            <button class="btn-del rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100">X</button>
-          </div>
-        </div>
-        <div class="mb-2 flex gap-3 text-xs text-stone-500">
-          ${p.heightM != null ? `<span>↕ ${p.heightM}m</span>` : ''}
-          ${p.widthM != null ? `<span>↔ ${p.widthM}m</span>` : ''}
-          ${p.climateZone ? `<span>Zone ${p.climateZone}</span>` : ''}
-        </div>
-        <div class="flex flex-wrap gap-1">${badges(p)}</div>
-        ${!v.complete ? `<p class="mt-2 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-700">Fehlt: ${v.missing.join(', ')}</p>` : ''}
-      </div>`;
-    }).join('');
 
+    if (viewMode === 'grid') {
+      listEl.className = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3';
+      listEl.innerHTML = cachedPlants.map(p => {
+        const v = validatePlant(p);
+        return `
+        <div class="group relative rounded-xl bg-white p-4 shadow-sm ring-1 ring-stone-200 transition hover:shadow-md hover:ring-green-300" data-id="${p.id}">
+          <div class="mb-2 flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <h3 class="truncate text-sm font-bold text-stone-800">${p.commonName || p.latinName}</h3>
+              <p class="truncate text-xs italic text-stone-500">${p.latinName}</p>
+            </div>
+            <div class="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100">
+              <button class="btn-enrich rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100" title="Daten von PFAF/NaturaDB ergänzen">Ergänzen</button>
+              <button class="btn-edit rounded-md bg-stone-100 px-2 py-1 text-xs font-medium text-stone-600 hover:bg-stone-200">Bearb.</button>
+              <button class="btn-del rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100">X</button>
+            </div>
+          </div>
+          <div class="mb-2 flex gap-3 text-xs text-stone-500">
+            ${p.heightM != null ? `<span>↕ ${p.heightM}m</span>` : ''}
+            ${p.widthM != null ? `<span>↔ ${p.widthM}m</span>` : ''}
+            ${p.climateZone ? `<span>Zone ${p.climateZone}</span>` : ''}
+          </div>
+          <div class="flex flex-wrap gap-1">${badges(p)}</div>
+          ${sourceSummaryHtml(p)}
+          ${!v.complete ? `<p class="mt-2 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-700">Fehlt: ${v.missing.join(', ')}</p>` : ''}
+        </div>`;
+      }).join('');
+
+    } else {
+      // List / table view with checkboxes
+      listEl.className = 'overflow-x-auto rounded-xl bg-white shadow-sm ring-1 ring-stone-200';
+      const allSelected = cachedPlants.length > 0 && cachedPlants.every(p => selectedIds.has(p.id));
+      listEl.innerHTML = `
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-stone-200 text-left text-xs font-medium text-stone-500">
+              <th class="w-8 px-3 py-2.5"><input type="checkbox" id="select-all-check" class="accent-green-600" ${allSelected ? 'checked' : ''} /></th>
+              <th class="px-3 py-2.5">Name</th>
+              <th class="hidden px-3 py-2.5 sm:table-cell">Lateinisch</th>
+              <th class="px-3 py-2.5">H</th>
+              <th class="px-3 py-2.5">B</th>
+              <th class="px-3 py-2.5">Quellen</th>
+              <th class="px-3 py-2.5">Aktionen</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-stone-100">
+            ${cachedPlants.map(p => {
+              const srcHtml = p._sources
+                ? [...new Set(Object.values(p._sources) as DataSource[])].filter(s => SOURCE_COLOR[s])
+                    .map(s => `<span class="inline-block rounded px-1 py-px text-[10px] font-semibold ${SOURCE_COLOR[s]}" title="${SOURCE_LABEL[s]}">${SOURCE_LABEL[s]}</span>`)
+                    .join(' ')
+                : '';
+              const sel = selectedIds.has(p.id);
+              return `
+              <tr data-id="${p.id}" class="hover:bg-stone-50 ${sel ? 'bg-green-50' : ''}">
+                <td class="px-3 py-2"><input type="checkbox" class="row-check accent-green-600" ${sel ? 'checked' : ''} /></td>
+                <td class="px-3 py-2 font-medium text-stone-800">${p.commonName || p.latinName}</td>
+                <td class="hidden px-3 py-2 italic text-stone-500 sm:table-cell">${p.latinName}</td>
+                <td class="px-3 py-2 text-stone-400">${p.heightM != null ? p.heightM + 'm' : '—'}</td>
+                <td class="px-3 py-2 text-stone-400">${p.widthM != null ? p.widthM + 'm' : '—'}</td>
+                <td class="px-3 py-2">${srcHtml}</td>
+                <td class="px-3 py-2">
+                  <div class="flex gap-1">
+                    <button class="btn-enrich rounded bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 hover:bg-blue-100" title="Ergänzen">↻</button>
+                    <button class="btn-edit rounded bg-stone-100 px-1.5 py-0.5 text-xs font-medium text-stone-600 hover:bg-stone-200">Bearb.</button>
+                    <button class="btn-del rounded bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-600 hover:bg-red-100">X</button>
+                  </div>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`;
+
+      document.getElementById('select-all-check')?.addEventListener('change', (e) => {
+        if ((e.target as HTMLInputElement).checked) {
+          cachedPlants.forEach(p => selectedIds.add(p.id));
+        } else {
+          selectedIds.clear();
+        }
+        updateBulkBar();
+        renderList();
+      });
+
+      listEl.querySelectorAll<HTMLInputElement>('.row-check').forEach((cb, idx) => {
+        cb.addEventListener('change', (e) => {
+          const id = cachedPlants[idx].id;
+          if ((e.target as HTMLInputElement).checked) selectedIds.add(id);
+          else selectedIds.delete(id);
+          updateBulkBar();
+          // Update row highlight without full re-render
+          const row = cb.closest('tr')!;
+          if (selectedIds.has(id)) row.classList.add('bg-green-50');
+          else row.classList.remove('bg-green-50');
+        });
+      });
+    }
+
+    // Enrich button handler (shared for grid + list)
     listEl.querySelectorAll('.btn-enrich').forEach(btn => {
       btn.addEventListener('click', async () => {
         const card = btn.closest('[data-id]') as HTMLElement;
         const id = card.dataset.id!;
-        const plant = (await getAllPlants()).find(p => p.id === id);
+        const plant = cachedPlants.find(p => p.id === id);
         if (!plant || !plant.latinName) { alert('Lateinischer Name fehlt.'); return; }
         const b = btn as HTMLButtonElement;
-        b.disabled = true; b.textContent = 'Lade...';
+        const origText = b.textContent;
+        b.disabled = true; b.textContent = '…';
         try {
+          if (!plant._sources) plant._sources = {};
           let enriched = 0;
-          // Proxy: PFAF + NaturaDB
+
           if (isSourceEnabled('pfaf') || isSourceEnabled('naturadb')) {
             const proxyData = await fetchProxyData(plant.latinName);
+            const filled: Partial<PlantData> = {};
             for (const [key, value] of Object.entries(proxyData)) {
-              const current = (plant as any)[key];
-              const isEmpty = current === null || current === undefined || current === '' || current === false ||
-                (Array.isArray(current) && current.every((v: boolean) => !v));
-              if (isEmpty && value !== null && value !== undefined && value !== '' && value !== false) {
-                (plant as any)[key] = value;
-                enriched++;
+              const cur = (plant as any)[key];
+              const empty = cur === null || cur === undefined || cur === '' || cur === false ||
+                (Array.isArray(cur) && cur.every((v: boolean) => !v));
+              if (empty && value !== null && value !== undefined && value !== '' && value !== false) {
+                (plant as any)[key] = value; (filled as any)[key] = value; enriched++;
               }
             }
+            if (Object.keys(filled).length > 0) {
+              const src: DataSource = isSourceEnabled('pfaf') ? 'pfaf' : 'naturadb';
+              trackSources(plant, filled, src);
+            }
           }
-          // Wikidata (image, dimensions)
+
           if (isSourceEnabled('wikidata') && !plant.imageUrl) {
-            // Quick search to find the Wikidata ID
             const searchUrl = new URL('https://www.wikidata.org/w/api.php');
             searchUrl.searchParams.set('action', 'wbsearchentities');
             searchUrl.searchParams.set('search', plant.latinName);
@@ -307,62 +538,119 @@ import Layout from '../layouts/Layout.astro';
               const wdId = sd.search?.[0]?.id;
               if (wdId) {
                 const details = await fetchPlantDetails(wdId);
+                const filled: Partial<PlantData> = {};
                 for (const [key, value] of Object.entries(details)) {
-                  const current = (plant as any)[key];
-                  const isEmpty = current === null || current === undefined || current === '' || current === false;
-                  if (isEmpty && value) { (plant as any)[key] = value; enriched++; }
+                  const cur = (plant as any)[key];
+                  const empty = cur === null || cur === undefined || cur === '' || cur === false;
+                  if (empty && value) { (plant as any)[key] = value; (filled as any)[key] = value; enriched++; }
                 }
+                if (Object.keys(filled).length > 0) trackSources(plant, filled, 'wikidata');
               }
             }
           }
+
           await savePlant(plant);
-          b.textContent = enriched > 0 ? `+${enriched} Felder` : 'Nichts Neues';
-          b.classList.replace('bg-blue-50', enriched > 0 ? 'bg-green-50' : 'bg-stone-50');
-          b.classList.replace('text-blue-700', enriched > 0 ? 'text-green-700' : 'text-stone-500');
-          setTimeout(() => renderList(), 1500);
-        } catch (e) {
-          b.textContent = 'Fehler'; b.classList.replace('bg-blue-50','bg-red-50'); b.classList.replace('text-blue-700','text-red-600');
-        }
+          b.textContent = enriched > 0 ? `+${enriched}` : origText;
+          setTimeout(() => renderList(), 1200);
+        } catch { b.textContent = '!'; b.disabled = false; }
       });
     });
+
     listEl.querySelectorAll('.btn-edit').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
-        const plant = (await getAllPlants()).find(p => p.id === id);
-        if (plant) { (document.getElementById('dialog-title') as HTMLElement).textContent = 'Pflanze bearbeiten'; fillForm(plant); dialog.showModal(); }
+        const plant = cachedPlants.find(p => p.id === id);
+        if (plant) {
+          editingPlant = plant;
+          (document.getElementById('dialog-title') as HTMLElement).textContent = 'Pflanze bearbeiten';
+          fillForm(plant);
+          dialog.showModal();
+        }
       });
     });
+
     listEl.querySelectorAll('.btn-del').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
-        if (confirm('Pflanze löschen?')) { await deletePlant(id); renderList(); }
+        if (confirm('Pflanze löschen?')) {
+          selectedIds.delete(id);
+          await deletePlant(id);
+          updateBulkBar();
+          renderList();
+        }
       });
     });
   }
 
+  // ── Dialog ────────────────────────────────────────────────────────────────────
+
   document.getElementById('btn-add')!.addEventListener('click', () => {
+    editingPlant = null;
     (document.getElementById('dialog-title') as HTMLElement).textContent = 'Neue Pflanze';
-    fillForm(createEmptyPlant()); dialog.showModal();
+    fillForm(createEmptyPlant());
+    dialog.showModal();
   });
   document.getElementById('btn-cancel')!.addEventListener('click', () => dialog.close());
   form.addEventListener('submit', async (e) => { e.preventDefault(); await savePlant(readForm()); dialog.close(); renderList(); });
+
+  // ── View toggle + Bulk actions ────────────────────────────────────────────────
+
+  document.getElementById('btn-view-toggle')!.addEventListener('click', () => {
+    viewMode = viewMode === 'grid' ? 'list' : 'grid';
+    const btn = document.getElementById('btn-view-toggle')!;
+    btn.textContent = viewMode === 'list' ? '⊞ Kacheln' : '☰ Liste';
+    if (viewMode === 'grid') { selectedIds.clear(); updateBulkBar(); }
+    renderList();
+  });
+
+  document.getElementById('btn-select-all')!.addEventListener('click', () => {
+    cachedPlants.forEach(p => selectedIds.add(p.id));
+    updateBulkBar(); renderList();
+  });
+  document.getElementById('btn-deselect')!.addEventListener('click', () => {
+    selectedIds.clear(); updateBulkBar(); renderList();
+  });
+  document.getElementById('btn-bulk-delete')!.addEventListener('click', async () => {
+    if (!selectedIds.size) return;
+    if (!confirm(`${selectedIds.size} Pflanze(n) löschen?`)) return;
+    for (const id of selectedIds) await deletePlant(id);
+    selectedIds.clear(); updateBulkBar(); renderList();
+  });
+  document.getElementById('btn-bulk-json')!.addEventListener('click', () => {
+    const plants = cachedPlants.filter(p => selectedIds.has(p.id));
+    triggerDownload(JSON.stringify(plants, null, 2), 'plants-export.json', 'application/json');
+  });
+  document.getElementById('btn-bulk-csv')!.addEventListener('click', () => {
+    const plants = cachedPlants.filter(p => selectedIds.has(p.id));
+    triggerDownload(buildCSV(plants), 'plants-export.csv', 'text/csv;charset=utf-8;');
+  });
+  document.getElementById('btn-bulk-pdf')!.addEventListener('click', async () => {
+    const plants = cachedPlants.filter(p => selectedIds.has(p.id));
+    if (plants.length > 0) await exportCardsPDF(plants);
+  });
+
+  // ── Standard actions ──────────────────────────────────────────────────────────
+
   document.getElementById('btn-load-samples')!.addEventListener('click', async () => { await importPlants(samplePlants); renderList(); });
-  document.getElementById('btn-export')!.addEventListener('click', async () => {
-    const b = new Blob([JSON.stringify(await getAllPlants(), null, 2)], { type: 'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'plants.json'; a.click();
+  document.getElementById('btn-export')!.addEventListener('click', () => {
+    triggerDownload(JSON.stringify(cachedPlants, null, 2), 'plants.json', 'application/json');
   });
   document.getElementById('btn-import')!.addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', async () => { const f = fileInput.files?.[0]; if (!f) return; await importPlants(JSON.parse(await f.text())); renderList(); fileInput.value = ''; });
-
+  fileInput.addEventListener('change', async () => {
+    const f = fileInput.files?.[0]; if (!f) return;
+    await importPlants(JSON.parse(await f.text())); renderList(); fileInput.value = '';
+  });
   document.getElementById('btn-import-csv')!.addEventListener('click', () => csvInput.click());
   csvInput.addEventListener('change', async () => {
     const f = csvInput.files?.[0]; if (!f) return;
     const plants = importFromCSV(await f.text());
     if (plants.length === 0) { alert('Keine Pflanzen in der CSV gefunden.'); return; }
+    for (const plant of plants) trackSources(plant, plant as Partial<PlantData>, 'csv');
     await importPlants(plants); renderList(); csvInput.value = '';
   });
 
-  // --- Live search ---
+  // ── Live search ───────────────────────────────────────────────────────────────
+
   const searchInput = document.getElementById('plant-search') as HTMLInputElement;
   const searchResults = document.getElementById('search-results')!;
   let searchTimeout: ReturnType<typeof setTimeout>;
@@ -385,59 +673,61 @@ import Layout from '../layouts/Layout.astro';
           <button class="btn-add-result shrink-0 rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Hinzuf.</button>
         </div>
       `).join('');
+
       searchResults.querySelectorAll('.btn-add-result').forEach((btn, idx) => {
         btn.addEventListener('click', async () => {
           const b = btn as HTMLButtonElement;
           const statusEl = b.closest('[data-idx]')?.querySelector('.import-status') as HTMLElement | null;
           b.disabled = true;
-          const sources: string[] = [];
-
+          const sourceLabels: string[] = [];
           try {
             const r = results[idx];
             const plant = createEmptyPlant();
+            plant._sources = {};
             plant.latinName = r.latinName;
             plant.commonName = r.commonName;
+            if (plant.latinName) plant._sources['latinName'] = 'manual';
+            if (plant.commonName) plant._sources['commonName'] = 'manual';
 
-            // 1. Wikidata
             if (r.wikidataId && isSourceEnabled('wikidata')) {
               b.textContent = 'Wikidata...';
               const details = await fetchPlantDetails(r.wikidataId);
               if (Object.keys(details).length > 0) {
                 Object.assign(plant, details);
-                sources.push('Wikidata');
+                trackSources(plant, details, 'wikidata');
+                sourceLabels.push('Wikidata');
               }
             }
 
-            // 2. PFAF + NaturaDB via proxy
             if (plant.latinName && (isSourceEnabled('pfaf') || isSourceEnabled('naturadb'))) {
               b.textContent = 'PFAF/NaturaDB...';
               const proxyData = await fetchProxyData(plant.latinName);
-              let proxyHits = 0;
+              const filled: Partial<PlantData> = {};
               for (const [key, value] of Object.entries(proxyData)) {
-                const current = (plant as any)[key];
-                const isEmpty = current === null || current === undefined || current === '' || current === false ||
-                  (Array.isArray(current) && current.every((v: boolean) => !v));
-                if (isEmpty && value !== null && value !== undefined && value !== '' && value !== false) {
-                  (plant as any)[key] = value;
-                  proxyHits++;
+                const cur = (plant as any)[key];
+                const empty = cur === null || cur === undefined || cur === '' || cur === false ||
+                  (Array.isArray(cur) && cur.every((v: boolean) => !v));
+                if (empty && value !== null && value !== undefined && value !== '' && value !== false) {
+                  (plant as any)[key] = value; (filled as any)[key] = value;
                 }
               }
-              if (proxyHits > 0) {
-                if (isSourceEnabled('pfaf')) sources.push('PFAF');
-                if (isSourceEnabled('naturadb')) sources.push('NaturaDB');
+              if (Object.keys(filled).length > 0) {
+                const src: DataSource = isSourceEnabled('pfaf') ? 'pfaf' : 'naturadb';
+                trackSources(plant, filled, src);
+                if (isSourceEnabled('pfaf')) sourceLabels.push('PFAF');
+                if (isSourceEnabled('naturadb')) sourceLabels.push('NaturaDB');
               }
             }
 
             plant.id = crypto.randomUUID();
             await savePlant(plant);
             renderList();
-
             b.textContent = '✓';
-            b.classList.replace('bg-green-700','bg-green-500');
-            if (statusEl) statusEl.textContent = sources.length > 0 ? `Quellen: ${sources.join(', ')}` : '';
+            b.classList.replace('bg-green-700', 'bg-green-500');
+            if (statusEl) statusEl.textContent = sourceLabels.length ? `Quellen: ${sourceLabels.join(', ')}` : '';
           } catch {
             b.textContent = 'Fehler';
-            b.classList.replace('bg-green-700','bg-red-500');
+            b.classList.replace('bg-green-700', 'bg-red-500');
           }
         });
       });

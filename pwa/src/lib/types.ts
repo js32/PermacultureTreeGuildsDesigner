@@ -1,3 +1,23 @@
+export type DataSource = 'wikidata' | 'pfaf' | 'naturadb' | 'manual' | 'csv' | 'sample';
+
+export const SOURCE_LABEL: Record<DataSource, string> = {
+  wikidata: 'Wikidata',
+  pfaf:     'PFAF',
+  naturadb: 'NaturaDB',
+  manual:   'Manuell',
+  csv:      'CSV',
+  sample:   'Beispiel',
+};
+
+export const SOURCE_COLOR: Record<DataSource, string> = {
+  wikidata: 'bg-blue-100 text-blue-700',
+  pfaf:     'bg-green-100 text-green-700',
+  naturadb: 'bg-orange-100 text-orange-700',
+  manual:   'bg-stone-100 text-stone-600',
+  csv:      'bg-purple-100 text-purple-700',
+  sample:   'bg-teal-100 text-teal-700',
+};
+
 export interface PlantData {
   id: string;
   latinName: string;
@@ -52,6 +72,8 @@ export interface PlantData {
   flowerMonths: boolean[];
   // Image
   imageUrl: string;
+  // Provenance: source per field (optional, not all plants have this)
+  _sources?: Partial<Record<keyof PlantData, DataSource>>;
 }
 
 export function createEmptyPlant(): PlantData {

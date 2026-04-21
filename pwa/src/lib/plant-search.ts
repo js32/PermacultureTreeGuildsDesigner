@@ -1,5 +1,16 @@
-import { createEmptyPlant, type PlantData } from './types';
+import { createEmptyPlant, type DataSource, type PlantData } from './types';
 import { isSourceEnabled } from './settings';
+
+function recordSources(plant: PlantData, data: Partial<PlantData>, source: DataSource) {
+  if (!plant._sources) plant._sources = {};
+  for (const key of Object.keys(data) as (keyof PlantData)[]) {
+    if (key === '_sources' || key === 'id') continue;
+    const val = data[key];
+    const isEmpty = val === null || val === undefined || val === '' || val === false ||
+      (Array.isArray(val) && (val as boolean[]).every(v => !v));
+    if (!isEmpty) (plant._sources as any)[key] = source;
+  }
+}
 
 export interface SearchResult {
   latinName: string;
@@ -205,6 +216,7 @@ export async function fetchProxyData(latinName: string): Promise<Partial<PlantDa
  */
 export async function importPlantFromSearch(result: SearchResult): Promise<PlantData> {
   const plant = createEmptyPlant();
+  plant._sources = {};
   plant.latinName = result.latinName;
   plant.commonName = result.commonName;
 
@@ -212,20 +224,24 @@ export async function importPlantFromSearch(result: SearchResult): Promise<Plant
   if (result.wikidataId && isSourceEnabled('wikidata')) {
     const details = await fetchPlantDetails(result.wikidataId);
     Object.assign(plant, details);
+    recordSources(plant, details, 'wikidata');
   }
 
   // PFAF + NaturaDB enrichment via proxy
   if (plant.latinName && (isSourceEnabled('pfaf') || isSourceEnabled('naturadb'))) {
     const proxyData = await fetchProxyData(plant.latinName);
     // Only fill empty fields — don't overwrite Wikidata data
+    const filled: Partial<PlantData> = {};
     for (const [key, value] of Object.entries(proxyData)) {
       const current = (plant as any)[key];
       const isEmpty = current === null || current === undefined || current === '' || current === false ||
         (Array.isArray(current) && current.every((v: boolean) => !v));
       if (isEmpty) {
         (plant as any)[key] = value;
+        (filled as any)[key] = value;
       }
     }
+    recordSources(plant, filled, 'pfaf'); // proxy merges pfaf+naturadb; use 'pfaf' as primary
   }
 
   plant.id = crypto.randomUUID();
