@@ -1,4 +1,4 @@
-# Permaculture Guild Designer — PWA
+# Perma Guild Forge — PWA
 
 Browser-basierte PWA zur Gestaltung und Verwaltung von Permakultur-Pflanzengilden. Ersetzt das PowerShell-Modul durch eine offline-faehige Web-App.
 

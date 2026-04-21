@@ -97,7 +97,7 @@ async function fetchPfaf(name: string): Promise<Partial<PlantResult>> {
   const url = `https://pfaf.org/user/Plant.aspx?LatinName=${encodeURIComponent(name.replace(/ /g, "+"))}`;
   let html: string;
   try {
-    const res = await fetch(url, { headers: { "User-Agent": "PermacultureGuildDesigner/1.0" } });
+    const res = await fetch(url, { headers: { "User-Agent": "PermaGuildForge/1.0" } });
     if (!res.ok) return {};
     html = await res.text();
   } catch { return {}; }
@@ -190,7 +190,7 @@ async function fetchNaturaDb(name: string): Promise<Partial<PlantResult>> {
   const url = `https://www.naturadb.de/pflanzen/${slug}/`;
   let html: string;
   try {
-    const res = await fetch(url, { headers: { "User-Agent": "PermacultureGuildDesigner/1.0" } });
+    const res = await fetch(url, { headers: { "User-Agent": "PermaGuildForge/1.0" } });
     if (!res.ok) return {};
     html = await res.text();
   } catch { return {}; }
