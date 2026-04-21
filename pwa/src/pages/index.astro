@@ -3,14 +3,14 @@ import Layout from '../layouts/Layout.astro';
 ---
 <Layout title="Perma Guild Forge">
   <!-- Search -->
-  <section class="mb-8 rounded-xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
-    <label for="plant-search" class="mb-1 block text-sm font-semibold text-stone-700">Pflanze suchen <span class="font-normal text-stone-400">(Wikidata)</span></label>
+  <section class="relative mb-6">
     <div class="flex gap-2">
-      <input type="text" id="plant-search" placeholder="z.B. Acer, Beinwell, Symphytum..."
-        class="flex-1 rounded-lg border border-stone-300 px-3 py-2 text-sm shadow-inner transition focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" autocomplete="off" />
-      <button id="btn-search" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Suchen</button>
+      <input type="text" id="plant-search" placeholder="Pflanze suchen… (lat. oder dt. Name)"
+        class="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm shadow-sm transition focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" autocomplete="off" />
+      <button id="btn-search" class="rounded-xl bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Suchen</button>
     </div>
-    <div id="search-results" class="mt-3 divide-y divide-stone-100"></div>
+    <!-- Floating dropdown -->
+    <div id="search-results" class="absolute left-0 right-0 top-full z-50 mt-1 hidden max-h-80 overflow-y-auto rounded-xl border border-stone-200 bg-white shadow-xl"></div>
   </section>
 
   <!-- Actions -->
@@ -799,18 +799,19 @@ import Layout from '../layouts/Layout.astro';
 
   async function doSearch() {
     const q = searchInput.value.trim();
-    if (q.length < 2) { searchResults.innerHTML = ''; return; }
-    searchResults.innerHTML = '<p class="py-2 text-sm text-stone-400 animate-pulse">Suche...</p>';
+    if (q.length < 2) { searchResults.innerHTML = ''; searchResults.classList.add('hidden'); return; }
+    searchResults.classList.remove('hidden');
+    searchResults.innerHTML = '<p class="px-4 py-3 text-sm text-stone-400 animate-pulse">Suche…</p>';
     try {
       const results = await searchPlants(q);
-      if (results.length === 0) { searchResults.innerHTML = '<p class="py-2 text-sm text-stone-400">Keine Ergebnisse.</p>'; return; }
+      if (results.length === 0) { searchResults.innerHTML = '<p class="px-4 py-3 text-sm text-stone-400">Keine Ergebnisse.</p>'; return; }
       searchResults.innerHTML = results.map((r, i) => `
-        <div class="flex items-center justify-between gap-3 py-2" data-idx="${i}">
+        <div class="flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-stone-50 transition" data-idx="${i}">
           <div class="min-w-0">
             <p class="truncate text-sm font-medium text-stone-800">${r.commonName || r.latinName}</p>
             ${r.latinName ? `<p class="truncate text-xs italic text-stone-500">${r.latinName}</p>` : ''}
             ${r.description ? `<p class="truncate text-xs text-stone-400">${r.description}</p>` : ''}
-            <p class="import-status mt-0.5 text-xs text-green-600"></p>
+            <p class="import-status text-xs text-green-600"></p>
           </div>
           <button class="btn-add-result shrink-0 rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Hinzuf.</button>
         </div>
@@ -885,19 +886,25 @@ import Layout from '../layouts/Layout.astro';
             renderList();
             b.textContent = '✓';
             b.classList.replace('bg-green-700', 'bg-green-500');
-            if (statusEl) statusEl.textContent = sourceLabels.length ? `Quellen: ${sourceLabels.join(', ')}` : '';
+            if (statusEl) statusEl.textContent = sourceLabels.length ? `${sourceLabels.join(' + ')}` : '';
+            setTimeout(() => { searchResults.classList.add('hidden'); searchResults.innerHTML = ''; searchInput.value = ''; }, 800);
           } catch {
             b.textContent = 'Fehler';
             b.classList.replace('bg-green-700', 'bg-red-500');
           }
         });
       });
-    } catch (err) { searchResults.innerHTML = `<p class="py-2 text-sm text-red-500">Fehler: ${err}</p>`; }
+    } catch (err) { searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-red-500">Fehler: ${err}</p>`; }
   }
 
   document.getElementById('btn-search')!.addEventListener('click', doSearch);
-  searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
+  searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } if (e.key === 'Escape') { searchResults.classList.add('hidden'); } });
   searchInput.addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(doSearch, 300); });
+  document.addEventListener('click', (e) => {
+    if (!searchResults.contains(e.target as Node) && e.target !== searchInput) {
+      searchResults.classList.add('hidden');
+    }
+  });
 
   updateViewButtons();
   renderList();
