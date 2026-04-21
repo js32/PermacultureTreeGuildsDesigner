@@ -278,17 +278,32 @@ import Layout from '../layouts/Layout.astro';
     });
   }
 
-  /** Compact source summary chips for a plant card. */
-  function sourceSummaryHtml(p: PlantData): string {
+  // Outline-only source badge (hollow = provenance, not usage)
+  const SOURCE_OUTLINE: Record<DataSource, string> = {
+    wikidata: 'border-blue-300 text-blue-500',
+    pfaf:     'border-green-300 text-green-600',
+    naturadb: 'border-orange-300 text-orange-500',
+    manual:   'border-stone-300 text-stone-500',
+    csv:      'border-purple-300 text-purple-500',
+    sample:   'border-teal-300 text-teal-500',
+  };
+  const SOURCE_SHORT: Record<DataSource, string> = {
+    wikidata: 'WD', pfaf: 'PFAF', naturadb: 'NDB', manual: 'M', csv: 'CSV', sample: '~',
+  };
+
+  /** Outline source chips — visually distinct from filled usage badges. */
+  function sourceChipsHtml(p: PlantData): string {
     if (!p._sources) return '';
     const sources = [...new Set(Object.values(p._sources))] as DataSource[];
     if (sources.length === 0) return '';
-    const chips = sources
-      .filter(s => SOURCE_COLOR[s])
-      .map(s => `<span class="inline-block rounded px-1 py-px text-[10px] font-semibold ${SOURCE_COLOR[s]}" title="Quelle: ${SOURCE_LABEL[s]}">${SOURCE_LABEL[s]}</span>`)
+    return sources
+      .filter(s => SOURCE_OUTLINE[s])
+      .map(s => `<span class="inline-block rounded border px-1.5 py-px text-[10px] font-medium ${SOURCE_OUTLINE[s]}" title="Datenquelle: ${SOURCE_LABEL[s]}">${SOURCE_SHORT[s]}</span>`)
       .join(' ');
-    return `<div class="mt-1.5 flex flex-wrap gap-1">${chips}</div>`;
   }
+
+  /** @deprecated use sourceChipsHtml */
+  function sourceSummaryHtml(p: PlantData): string { return ''; }
 
   // ── Form ─────────────────────────────────────────────────────────────────────
 
@@ -650,16 +665,15 @@ import Layout from '../layouts/Layout.astro';
               ${p.climateZone ? `<span>Zone ${p.climateZone}</span>` : ''}
             </div>
             <div class="flex flex-wrap gap-1">${badges(p)}</div>
-            ${sourceSummaryHtml(p)}
           </div>
-          <!-- Completeness bar -->
-          <div class="px-4 pb-2.5 pt-1 pl-4">
-            <div class="flex items-center gap-2">
-              <div class="h-1 flex-1 overflow-hidden rounded-full bg-stone-100">
-                <div class="h-full rounded-full ${barColor}" style="width:${pct}%"></div>
-              </div>
-              <span class="text-[10px] tabular-nums text-stone-400">${pct}%</span>
+          <!-- Footer: completeness bar + source chips -->
+          <div class="flex items-center gap-2 border-t border-stone-100 px-4 py-2">
+            <div class="h-1.5 w-20 overflow-hidden rounded-full bg-stone-100">
+              <div class="h-full rounded-full ${barColor}" style="width:${pct}%"></div>
             </div>
+            <span class="text-[10px] tabular-nums text-stone-400">${pct}%</span>
+            <span class="flex-1"></span>
+            ${sourceChipsHtml(p)}
           </div>
         </div>`;
       }).join('');
@@ -684,11 +698,7 @@ import Layout from '../layouts/Layout.astro';
           </thead>
           <tbody class="divide-y divide-stone-100">
             ${displayPlants.map(p => {
-              const srcHtml = p._sources
-                ? [...new Set(Object.values(p._sources) as DataSource[])].filter(s => SOURCE_COLOR[s])
-                    .map(s => `<span class="inline-block rounded px-1 py-px text-[10px] font-semibold ${SOURCE_COLOR[s]}" title="${SOURCE_LABEL[s]}">${SOURCE_LABEL[s]}</span>`)
-                    .join(' ')
-                : '';
+              const srcHtml = sourceChipsHtml(p);
               const sel = selectedIds.has(p.id);
               const pct = completenessPercent(p);
               const barColor = pct >= 80 ? 'bg-green-400' : pct >= 50 ? 'bg-amber-400' : 'bg-red-300';
