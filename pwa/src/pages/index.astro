@@ -884,10 +884,10 @@ import Layout from '../layouts/Layout.astro';
             plant.id = crypto.randomUUID();
             await savePlant(plant);
             renderList();
-            b.textContent = '✓';
+            b.textContent = '✓ Hinzugefügt';
             b.classList.replace('bg-green-700', 'bg-green-500');
+            b.disabled = true;
             if (statusEl) statusEl.textContent = sourceLabels.length ? `${sourceLabels.join(' + ')}` : '';
-            setTimeout(() => { searchResults.classList.add('hidden'); searchResults.innerHTML = ''; searchInput.value = ''; }, 800);
           } catch {
             b.textContent = 'Fehler';
             b.classList.replace('bg-green-700', 'bg-red-500');
