@@ -52,6 +52,19 @@ export interface SearchResult {
   description?: string;
 }
 
+/** Return false if the description clearly identifies a non-plant organism. */
+function looksLikePlant(descDe: string, descEn: string): boolean {
+  const text = `${descDe} ${descEn}`.toLowerCase();
+  if (!text) return true; // no description → keep
+  const nonPlant = [
+    'animal', 'mammal', 'bird', 'fish', 'reptile', 'insect', 'amphibian',
+    'beetle', 'butterfly', 'moth', 'spider', 'bee', 'wasp', 'ant', 'worm',
+    'tier', 'säugetier', 'vogel', 'fisch', 'reptil', 'insekt', 'käfer',
+    'schmetterling', 'spinne', 'wurm',
+  ];
+  return !nonPlant.some(w => text.includes(w));
+}
+
 /** Active request controller — cancelled when a newer search starts */
 let activeController: AbortController | null = null;
 
@@ -117,6 +130,8 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
               const latin = taxonClaim || '';
               // Skip if already found in local DB
               if (latin && localLatinNames.has(latin.toLowerCase())) continue;
+              // Skip obvious non-plants based on description
+              if (!looksLikePlant(descDe || '', descEn || '')) continue;
               results.push({
                 latinName: latin,
                 commonName: labelDe || labelEn || taxonClaim || '',
