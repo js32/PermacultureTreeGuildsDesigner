@@ -714,7 +714,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- Mobile card list (< sm) -->
         <div class="sm:hidden divide-y divide-stone-100">
           ${rowData.map(({ p, srcHtml, sel, pct, barColor, useDots }) => `
-          <div data-id="${p.id}" class="flex items-start gap-2.5 px-3 py-3 ${sel ? 'bg-green-50' : ''}">
+          <div data-id="${p.id}" class="flex items-start gap-2.5 px-3 py-3 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}">
             <input type="checkbox" class="row-check mt-1 shrink-0 accent-green-600" ${sel ? 'checked' : ''} />
             <div class="w-0.5 self-stretch rounded-full ${accentColor(p)} shrink-0"></div>
             <div class="min-w-0 flex-1">
@@ -760,7 +760,7 @@ import Layout from '../layouts/Layout.astro';
             </thead>
             <tbody class="divide-y divide-stone-100">
               ${rowData.map(({ p, srcHtml, sel, pct, barColor, useDots }) => `
-              <tr data-id="${p.id}" class="hover:bg-stone-50 dark:hover:bg-stone-800 ${sel ? 'bg-green-50' : ''}">
+              <tr data-id="${p.id}" class="hover:bg-stone-50 dark:hover:bg-stone-800 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}">
                 <td class="px-3 py-2"><input type="checkbox" class="row-check accent-green-600" ${sel ? 'checked' : ''} /></td>
                 <td class="px-3 py-2">
                   <div class="flex items-center gap-1.5">
@@ -818,8 +818,8 @@ import Layout from '../layouts/Layout.astro';
           updateBulkBar();
           // Sync both mobile card and desktop row highlight
           listEl.querySelectorAll<HTMLElement>(`[data-id="${id}"]`).forEach(el => {
-            if (selectedIds.has(id)) el.classList.add('bg-green-50');
-            else el.classList.remove('bg-green-50');
+            if (selectedIds.has(id)) el.classList.add('bg-green-50', 'dark:bg-green-900/30');
+            else el.classList.remove('bg-green-50', 'dark:bg-green-900/30');
           });
           // Sync sibling checkbox in the other view
           listEl.querySelectorAll<HTMLInputElement>(`[data-id="${id}"] .row-check`).forEach(sibling => {
