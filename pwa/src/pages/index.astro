@@ -216,7 +216,7 @@ import Layout from '../layouts/Layout.astro';
   import { importFromCSV } from '../lib/csv-import';
   import { validatePlant } from '../lib/validate';
   import { searchPlants, fetchProxyData, fetchPlantDetails } from '../lib/plant-search';
-  import { isSourceEnabled } from '../lib/settings';
+  import { isSourceEnabled, loadSettings } from '../lib/settings';
   import { exportCardsPDF, exportSingleCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF } from '../lib/pdf-export';
   import { renderPolyCardHtml, renderStripeCardHtml } from '../lib/card-html';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
@@ -229,8 +229,11 @@ import Layout from '../layouts/Layout.astro';
   const bulkBar = document.getElementById('bulk-bar')!;
   const bulkCountEl = document.getElementById('bulk-count')!;
 
-  let viewMode: 'grid' | 'list' | 'cards' = 'grid';
-  let cardViewMode: 'poly' | 'stripe' | 'baumscheibe' = 'poly';
+  const initialPrefs = (() => {
+    try { return loadSettings(); } catch { return null; }
+  })();
+  let viewMode: 'grid' | 'list' | 'cards' = initialPrefs?.defaultView ?? 'grid';
+  let cardViewMode: 'poly' | 'stripe' | 'baumscheibe' = initialPrefs?.defaultCardVariant ?? 'poly';
   let selectedIds = new Set<string>();
   let editingPlant: PlantData | null = null;
   let cachedPlants: PlantData[] = [];
@@ -1090,6 +1093,12 @@ import Layout from '../layouts/Layout.astro';
       searchResults.classList.add('hidden');
     }
   });
+
+  // Reflect default card-variant choice in the dropdown.
+  (document.getElementById('card-type-select') as HTMLSelectElement | null)
+    ?.setAttribute('value', cardViewMode);
+  const cardSelect = document.getElementById('card-type-select') as HTMLSelectElement | null;
+  if (cardSelect) cardSelect.value = cardViewMode;
 
   updateViewButtons();
   renderList();
