@@ -61,7 +61,7 @@ import Layout from '../layouts/Layout.astro';
   <div id="plant-list" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" style="min-height:200px"></div>
 
   <!-- Edit dialog -->
-  <dialog id="plant-dialog" class="m-auto w-full max-w-2xl rounded-2xl p-0 shadow-2xl backdrop:bg-black/40">
+  <dialog id="plant-dialog" class="m-auto w-full max-w-2xl rounded-2xl bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 p-0 shadow-2xl backdrop:bg-black/40">
     <form id="plant-form" method="dialog" class="max-h-[85vh] overflow-y-auto p-6">
       <h2 id="dialog-title" class="mb-4 text-lg font-bold text-stone-800 dark:text-stone-100">Pflanze bearbeiten</h2>
       <input type="hidden" id="f-id" />
@@ -72,17 +72,17 @@ import Layout from '../layouts/Layout.astro';
           <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300">Grunddaten</legend>
           <div class="grid gap-3 sm:grid-cols-2">
             <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="latinName">Lateinischer Name</span>
-              <input type="text" id="f-latinName" required class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+              <input type="text" id="f-latinName" required class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
             <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="commonName">Deutscher Name</span>
-              <input type="text" id="f-commonName" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+              <input type="text" id="f-commonName" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
             <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="heightM">Höhe (m)</span>
-              <input type="number" id="f-heightM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+              <input type="number" id="f-heightM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
             <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="widthM">Breite (m)</span>
-              <input type="number" id="f-widthM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+              <input type="number" id="f-widthM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
             <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="climateZone">Klimazone</span>
-              <input type="text" id="f-climateZone" placeholder="z.B. 5-9" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+              <input type="text" id="f-climateZone" placeholder="z.B. 5-9" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
             <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="imageUrl">Bild-URL</span>
-              <input type="url" id="f-imageUrl" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+              <input type="url" id="f-imageUrl" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
           </div>
         </fieldset>
 
@@ -91,12 +91,12 @@ import Layout from '../layouts/Layout.astro';
           <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300">Nutzung</legend>
           <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
             <label class="inline-flex items-center gap-1.5" data-field="eatable"><input type="checkbox" id="f-eatable" class="accent-green-600" /> Essbar</label>
-            <label class="inline-flex items-center gap-1" data-field="eatableScore"><span class="text-stone-400 dark:text-stone-500">Score</span><input type="number" id="f-eatableScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1" data-field="eatableScore"><span class="text-stone-400 dark:text-stone-500">Score</span><input type="number" id="f-eatableScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
             <label class="inline-flex items-center gap-1.5" data-field="culinaric"><input type="checkbox" id="f-culinaric" class="accent-green-600" /> Kulinarisch</label>
             <label class="inline-flex items-center gap-1.5" data-field="meds"><input type="checkbox" id="f-meds" class="accent-green-600" /> Medizinisch</label>
-            <label class="inline-flex items-center gap-1" data-field="medsScore"><span class="text-stone-400 dark:text-stone-500">Score</span><input type="number" id="f-medsScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1" data-field="medsScore"><span class="text-stone-400 dark:text-stone-500">Score</span><input type="number" id="f-medsScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
             <label class="inline-flex items-center gap-1.5" data-field="material"><input type="checkbox" id="f-material" class="accent-green-600" /> Material</label>
-            <label class="inline-flex items-center gap-1" data-field="materialScore"><span class="text-stone-400 dark:text-stone-500">Score</span><input type="number" id="f-materialScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1" data-field="materialScore"><span class="text-stone-400 dark:text-stone-500">Score</span><input type="number" id="f-materialScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
             <label class="inline-flex items-center gap-1.5" data-field="fodder"><input type="checkbox" id="f-fodder" class="accent-green-600" /> Futter</label>
             <label class="inline-flex items-center gap-1.5" data-field="fuel"><input type="checkbox" id="f-fuel" class="accent-green-600" /> Brennstoff</label>
           </div>
@@ -714,7 +714,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- Mobile card list (< sm) -->
         <div class="sm:hidden divide-y divide-stone-100">
           ${rowData.map(({ p, srcHtml, sel, pct, barColor, useDots }) => `
-          <div data-id="${p.id}" class="flex items-start gap-2.5 px-3 py-3 ${sel ? 'bg-green-50' : ''}">
+          <div data-id="${p.id}" class="flex items-start gap-2.5 px-3 py-3 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}">
             <input type="checkbox" class="row-check mt-1 shrink-0 accent-green-600" ${sel ? 'checked' : ''} />
             <div class="w-0.5 self-stretch rounded-full ${accentColor(p)} shrink-0"></div>
             <div class="min-w-0 flex-1">
@@ -760,7 +760,7 @@ import Layout from '../layouts/Layout.astro';
             </thead>
             <tbody class="divide-y divide-stone-100">
               ${rowData.map(({ p, srcHtml, sel, pct, barColor, useDots }) => `
-              <tr data-id="${p.id}" class="hover:bg-stone-50 dark:hover:bg-stone-800 ${sel ? 'bg-green-50' : ''}">
+              <tr data-id="${p.id}" class="hover:bg-stone-50 dark:hover:bg-stone-800 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}">
                 <td class="px-3 py-2"><input type="checkbox" class="row-check accent-green-600" ${sel ? 'checked' : ''} /></td>
                 <td class="px-3 py-2">
                   <div class="flex items-center gap-1.5">
@@ -818,8 +818,8 @@ import Layout from '../layouts/Layout.astro';
           updateBulkBar();
           // Sync both mobile card and desktop row highlight
           listEl.querySelectorAll<HTMLElement>(`[data-id="${id}"]`).forEach(el => {
-            if (selectedIds.has(id)) el.classList.add('bg-green-50');
-            else el.classList.remove('bg-green-50');
+            if (selectedIds.has(id)) el.classList.add('bg-green-50', 'dark:bg-green-900/30');
+            else el.classList.remove('bg-green-50', 'dark:bg-green-900/30');
           });
           // Sync sibling checkbox in the other view
           listEl.querySelectorAll<HTMLInputElement>(`[data-id="${id}"] .row-check`).forEach(sibling => {
