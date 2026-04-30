@@ -39,6 +39,7 @@ import Layout from '../layouts/Layout.astro';
     <select id="card-type-select" class="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
       <option value="poly">Pflanzenkarten</option>
       <option value="stripe">Streifenkarten</option>
+      <option value="baumscheibe">Baumscheibe</option>
     </select>
     <button id="btn-pdf-all" class="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow transition hover:bg-green-800">PDF ↓</button>
   </div>
@@ -216,8 +217,9 @@ import Layout from '../layouts/Layout.astro';
   import { validatePlant } from '../lib/validate';
   import { searchPlants, fetchProxyData, fetchPlantDetails } from '../lib/plant-search';
   import { isSourceEnabled } from '../lib/settings';
-  import { exportCardsPDF, exportSingleCardPDF } from '../lib/pdf-export';
+  import { exportCardsPDF, exportSingleCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF } from '../lib/pdf-export';
   import { renderPolyCardHtml, renderStripeCardHtml } from '../lib/card-html';
+  import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
 
   const listEl = document.getElementById('plant-list')!;
   const dialog = document.getElementById('plant-dialog') as HTMLDialogElement;
@@ -228,7 +230,7 @@ import Layout from '../layouts/Layout.astro';
   const bulkCountEl = document.getElementById('bulk-count')!;
 
   let viewMode: 'grid' | 'list' | 'cards' = 'grid';
-  let cardViewMode: 'poly' | 'stripe' = 'poly';
+  let cardViewMode: 'poly' | 'stripe' | 'baumscheibe' = 'poly';
   let selectedIds = new Set<string>();
   let editingPlant: PlantData | null = null;
   let cachedPlants: PlantData[] = [];
@@ -604,9 +606,14 @@ import Layout from '../layouts/Layout.astro';
 
     if (viewMode === 'cards') {
       const isStripe = cardViewMode === 'stripe';
+      const isBaumscheibe = cardViewMode === 'baumscheibe';
       listEl.className = isStripe ? 'flex flex-col items-stretch gap-2' : 'flex flex-wrap justify-center gap-6';
+      const cardHtmls = await Promise.all(displayPlants.map(async (p) => {
+        if (isBaumscheibe) return renderBaumscheibeCardHtml(p);
+        return isStripe ? renderStripeCardHtml(p) : renderPolyCardHtml(p);
+      }));
       listEl.innerHTML = displayPlants.map((p, i) => {
-        const cardHtml = isStripe ? renderStripeCardHtml(p) : renderPolyCardHtml(p);
+        const cardHtml = cardHtmls[i];
         return `
         <div class="group relative overflow-hidden rounded-xl shadow-md ring-1 ring-stone-200 transition hover:shadow-lg hover:ring-green-300" data-id="${p.id}" data-idx="${i}">
           <div class="pointer-events-none${isStripe ? ' overflow-x-auto' : ''}">${cardHtml}</div>
@@ -627,7 +634,10 @@ import Layout from '../layouts/Layout.astro';
           const plant = cachedPlants.find(p => p.id === id);
           if (!plant) return;
           b.disabled = true; b.textContent = '...';
-          try { await exportSingleCardPDF(plant); }
+          try {
+            if (cardViewMode === 'baumscheibe') await exportBaumscheibePDF(plant);
+            else await exportSingleCardPDF(plant);
+          }
           catch (err) { alert(`PDF-Fehler: ${err instanceof Error ? err.message : String(err)}`); }
           finally { b.disabled = false; b.textContent = 'PDF'; }
         });
@@ -887,14 +897,17 @@ import Layout from '../layouts/Layout.astro';
     viewMode = 'cards'; selectedIds.clear(); updateBulkBar(); updateViewButtons(); renderList();
   });
   document.getElementById('card-type-select')!.addEventListener('change', (e) => {
-    cardViewMode = (e.target as HTMLSelectElement).value as 'poly' | 'stripe';
+    cardViewMode = (e.target as HTMLSelectElement).value as 'poly' | 'stripe' | 'baumscheibe';
     renderList();
   });
   document.getElementById('btn-pdf-all')!.addEventListener('click', async () => {
     if (cachedPlants.length === 0) return;
     const btn = document.getElementById('btn-pdf-all') as HTMLButtonElement;
     btn.disabled = true; btn.textContent = '...';
-    try { await exportCardsPDF(cachedPlants); }
+    try {
+      if (cardViewMode === 'baumscheibe') await exportBaumscheibesPDF(cachedPlants);
+      else await exportCardsPDF(cachedPlants);
+    }
     finally { btn.disabled = false; btn.textContent = 'PDF ↓'; }
   });
 
