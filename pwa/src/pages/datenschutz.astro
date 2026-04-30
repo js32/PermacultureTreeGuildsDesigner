@@ -1,0 +1,82 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Perma Guild Forge — Datenschutz">
+  <article class="prose prose-stone dark:prose-invert mx-auto max-w-3xl space-y-6 text-stone-800 dark:text-stone-100">
+    <h1 class="text-2xl font-bold">Datenschutz­erklärung</h1>
+
+    <p class="text-sm text-stone-500 dark:text-stone-400">Stand: <time datetime="2026-05-01">1. Mai 2026</time></p>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Kurzfassung</h2>
+      <p>Perma Guild Forge ist eine Local-First-Webanwendung. Deine Pflanzen­daten werden ausschließlich
+        in deinem Browser (IndexedDB) gespeichert und nicht an einen Server übertragen. Es gibt kein
+        Tracking, keine Cookies zu Marketing- oder Analyse­zwecken und keine Nutzer­konten.</p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Verantwortlich</h2>
+      <p>Verantwortlich für die Bereitstellung dieser Anwendung sind die im
+        <a class="font-medium text-green-700 hover:underline dark:text-green-400" href="/impressum">Impressum</a>
+        genannten Personen.</p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Lokal gespeicherte Daten</h2>
+      <p>Folgende Daten werden ausschließlich lokal in deinem Browser gespeichert und verlassen dein Gerät nicht:</p>
+      <ul class="list-disc pl-6">
+        <li><strong>Pflanzen­datenbank</strong> (IndexedDB <code>permaculture-guilds</code>): die von dir
+          erfassten oder importierten Pflanzen­datensätze inklusive Eigenschaften, Quellen und Bild-URLs.</li>
+        <li><strong>Einstellungen</strong> (localStorage): aktivierte Daten­quellen, Theme-Präferenz
+          (Hell/Dunkel) und Hinweise, die du weggeklickt hast.</li>
+        <li><strong>Service-Worker-Cache</strong>: statische Anwendungs­dateien für die Offline-Nutzung.</li>
+      </ul>
+      <p>Du kannst diese Daten jederzeit über die Browser-Einstellungen oder über die Export- und Lösch­funktionen
+        innerhalb der App entfernen.</p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Externe Dienste</h2>
+      <p>Wenn du Pflanzen­daten suchst oder anreicherst, werden Anfragen an externe Dienste gesendet.
+        Welche Quellen aktiv sind, kannst du in den Einstellungen festlegen.</p>
+      <ul class="list-disc pl-6">
+        <li><strong>Wikidata</strong> (<a class="text-green-700 dark:text-green-400 hover:underline" href="https://www.wikidata.org" target="_blank" rel="noopener">wikidata.org</a>) —
+          direkte API-Anfragen aus deinem Browser für Such­ergebnisse und Pflanzen­details.</li>
+        <li><strong>PFAF</strong> (<a class="text-green-700 dark:text-green-400 hover:underline" href="https://pfaf.org" target="_blank" rel="noopener">pfaf.org</a>) und
+          <strong>NaturaDB</strong> (<a class="text-green-700 dark:text-green-400 hover:underline" href="https://www.naturadb.de" target="_blank" rel="noopener">naturadb.de</a>) —
+          Anfragen werden über eine Netlify Serverless Function (<code>/api/plant-proxy</code>) als CORS-Proxy
+          weitergeleitet, weil die Quellen keinen direkten Browser-Zugriff erlauben.</li>
+        <li><strong>Wikimedia Commons</strong> — Pflanzen­bilder werden bei Bedarf direkt von dort geladen.</li>
+      </ul>
+      <p>Bei diesen Anfragen wird deine IP-Adresse vom jeweiligen Anbieter verarbeitet. Wir haben darauf keinen Einfluss.</p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Hosting</h2>
+      <p>Die Anwendung wird über <strong>Netlify</strong> (Netlify, Inc., 44 Montgomery St, San Francisco, USA) ausgeliefert.
+        Beim Aufruf der Seite werden technisch notwendige Server-Logs (z.B. IP-Adresse, Zeitstempel, User-Agent)
+        durch Netlify verarbeitet. Details: <a class="text-green-700 dark:text-green-400 hover:underline" href="https://www.netlify.com/privacy" target="_blank" rel="noopener">netlify.com/privacy</a>.</p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Cookies</h2>
+      <p>Diese Anwendung setzt keine Cookies. Für lokale Einstellungen wird ausschließlich <code>localStorage</code>
+        und <code>IndexedDB</code> verwendet. Diese Daten verbleiben auf deinem Gerät.</p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Tracking / Analytics</h2>
+      <p>Es findet kein Tracking statt. Es werden keine Analyse-Tools (z.B. Google Analytics, Matomo, Plausible) eingebunden.</p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Deine Rechte</h2>
+      <p>Da personen­bezogene Daten ausschließlich auf deinem Gerät verbleiben, hast du jederzeit volle Kontrolle:
+        Daten exportieren (JSON / CSV), bearbeiten oder löschen. Server­seitig werden keine personen­bezogenen
+        Daten gespeichert, die wir auf Anfrage herausgeben oder löschen müssten.</p>
+      <p>Bei Fragen zum Datenschutz wende dich an die im
+        <a class="font-medium text-green-700 dark:text-green-400 hover:underline" href="/impressum">Impressum</a>
+        genannte Adresse.</p>
+    </section>
+  </article>
+</Layout>
