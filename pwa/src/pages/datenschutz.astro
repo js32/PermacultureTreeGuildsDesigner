@@ -80,8 +80,23 @@ import Layout from '../layouts/Layout.astro';
       <p>Erfasst werden ausschließlich aggregierte Werte wie Seitenpfad, Verweis-Domain (Referrer),
         ungefährer Standort auf Länder-/Regionsebene, Browser- und Geräte-Typ. Eine Einwilligung
         ist nach Auffassung der Aufsichts­behörden für diese cookielose Form der Reichweiten­messung
-        nicht erforderlich. Wenn du die Messung trotzdem unterbinden möchtest, hilft eine Browser­einstellung
-        wie „Do Not Track", ein Tracking-Blocker oder ein Werbe-Blocker mit aktiven EasyPrivacy-Listen.</p>
+        nicht erforderlich.</p>
+
+      <h3 class="pt-2 text-base font-semibold">Reichweiten­messung deaktivieren</h3>
+      <p>Wenn du nicht gezählt werden möchtest, kannst du die Messung direkt in der App deaktivieren:</p>
+      <ol class="list-decimal pl-6">
+        <li>Öffne die <a class="text-green-700 dark:text-green-400 hover:underline" href="/settings">Einstellungen</a>.</li>
+        <li>Setze in der Sektion <strong>Privatsphäre</strong> den Haken bei
+          „<em>Plausible-Reichweitenmessung deaktivieren</em>".</li>
+        <li>Klicke auf <strong>Einstellungen speichern</strong>.</li>
+      </ol>
+      <p>Technisch wird dabei in deinem Browser der lokale Schlüssel
+        <code>plausible_ignore</code> auf <code>true</code> gesetzt — ein offizielles Opt-out-Signal,
+        das das Plausible-Skript automatisch respektiert. Es werden ab dem Zeitpunkt keine weiteren
+        Aufrufe gezählt. Die Einstellung wirkt nur in diesem Browser-Profil und nur, solange du den
+        lokalen Speicher der Seite nicht löschst.</p>
+      <p>Alternativ helfen browser­seitige Maßnahmen wie „Do Not Track", ein Tracking-Blocker oder
+        ein Werbe-Blocker mit aktiven EasyPrivacy-Listen.</p>
     </section>
 
     <section class="space-y-2">
