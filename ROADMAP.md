@@ -16,7 +16,16 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - **PDF-Export** — Polykarten und Streifenkarten via pdf-lib (Auto-Download); Baumscheibe via pdf-lib (Chrome/Safari) bzw. nativem Druckdialog (Firefox); Bulk-PDF aus Selektion
 - **Bulk-Operationen** — Auswählen, Löschen, Ergänzen, JSON/CSV/PDF-Export ausgewählter Pflanzen
 - **Feldprovenenz** — `_sources` pro Datenpunkt; Quell-Badges im Edit-Dialog; Outline-Chips in Kacheln/Liste
-- **Einstellungsseite** — Datenquellen aktivieren/deaktivieren
+- **Einstellungsseite** — fünf Sektionen:
+  - Datenquellen aktivieren/deaktivieren
+  - Standard-Ansicht (Kacheln/Liste/Karten) und -Kartenvariante (Poly/Stripe/Baumscheibe) beim App-Start
+  - Theme: Auto / Hell / Dunkel
+  - Privatsphäre: Plausible-Reichweitenmessung deaktivieren (lokal)
+  - Daten: Pflanzenanzahl + Speicherverbrauch, JSON-Backup-Download, Golden Master neu laden, Danger-Zone „Alle Daten löschen"
+- **Dark Mode** — Tailwind-v4 Class-Variant; Pre-Paint-Inline-Skript (kein Light-Flash); Header-Toggle + 3-Stufen-Setting (Auto folgt OS)
+- **Reichweitenmessung** — Plausible Analytics, cookieless, EU-gehostet; In-App-Opt-out via `plausible_ignore`-Flag in den Settings
+- **Rechtliches** — Datenschutz-Seite (lokal-first, externe Dienste, Plausible inkl. Opt-out-Anleitung), Impressum (Stub), Hilfe/Glossar, Footer-Links auf jeder Seite
+- **PWA-Install-Prompts** — Android/Chrome: Banner via `beforeinstallprompt`; iOS Safari: Popup mit Add-to-Home-Screen-Anleitung; beide UA-/Standalone-erkannt und dismissable
 - **UI-Redesign**:
   - Kachelansicht: Bildvorschau, farbiger Akzentstreifen nach Primärnutzung, Vollständigkeitsbalken
   - Listenansicht: Akzentpunkt, Nutzungsdots-Spalte, Vollständigkeitsbalken, sortierbar nach Vollständigkeit
@@ -29,8 +38,17 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 
 ## Kurzfristig
 
+### Launch-Blocker
+- [ ] **Impressum füllen** — aktuell Stub; vor öffentlichem Launch nach §5 TMG ergänzen (Name, Anschrift, Kontakt)
+- [ ] **Backup-Restore** — Settings → Daten: Backup-Download gibt's, Re-Import (JSON-Datei einlesen, alle Pflanzen + Settings wiederherstellen) fehlt — asymmetrisch
+- [ ] **Plausible-Domain** — `data-domain` in `Layout.astro` zeigt auf die Netlify-Subdomain; bei Custom-Domain anpassen + im Plausible-Dashboard registrieren
+
 ### UI / UX
-- [ ] **Dark Mode** — Farbsystem ist bereits strukturiert (warm=Nutzung, cool=Ökosystem); dunkle Variante ergänzen
+- [ ] **Lokaler Filter in der Pflanzenliste** — nach Nutzung, Sonne, Wasser, pH, Vollständigkeit; bei wachsender DB schnell unverzichtbar
+- [ ] **Theme-Toggle 3-State** — Header-Toggle setzt aktuell hart hell/dunkel und überschreibt „Auto"; sauber wäre Auto → Hell → Dunkel im Toggle (oder Hinweis, dass Toggle „Auto" deaktiviert)
+- [ ] **Tastatur-Shortcuts** — `/` Suche fokussieren, `Esc` Dialog schließen, `n` neue Pflanze, `g/l/c` View-Wechsel
+- [ ] **Bulk-Selection: Shift-Klick Range** — aktuell nur Einzel-Checkbox; Range-Select wäre Standard
+- [ ] **Empty-State auf `/cards`** — bei 0 Pflanzen ist „PDF exportieren" sinnlos; Hinweis + CTA wie auf Index
 - [ ] **Konfigurierbare Farbthemen** — Farbenblindheits-Modus
 - [ ] **Bild-Fallback** — Silhouette nach Pflanzentyp wenn kein Foto vorhanden
 
@@ -126,12 +144,17 @@ Mögliche Migrationsstrategie: PocketBase als optionaler Sync-Layer, IndexedDB b
 |---|---|
 | PDF-Streifen in LibreWolf (SMask/pdf.js) | ✅ behoben — raw RGB via `flateStream`, kein SMask |
 | Baumscheibe-PDF lahm + diagonal-streifig in Firefox/pdf.js | ✅ behoben — Firefox-Pfad nutzt nativen Druckdialog (vektoriell), Chrome/Safari weiter Canvas→JPEG→pdf-lib |
+| Dark-Mode-Bulk-Substitution leakte `dark:`-Klassen aus Variant-Präfixen heraus und brach View-Toggle-Buttons via `classList.add` mit Space-Strings | ✅ behoben — Regex mit START-Lookbehind/END-Lookahead, JS-Array-Tokens manuell aufgesplittet |
 | `svg-template.ts` und `card-svg.ts` — redundant neben Canvas-Renderer | ✅ gelöscht |
 | Root-Verzeichnis enthält Build-Artefakte (`index.html`, `sw.js`, `manifest.json`) | ✅ bereinigt |
 | PowerShell-Skripte als Legacy markieren, README aktualisieren | ✅ nach `legacy/` verschoben |
 | `netlify.toml` in `pwa/` — Proxy-Functions nicht erreichbar | ✅ behoben — `netlify.toml` ins Repo-Root mit `base = "pwa"` |
 | Branch `ui` noch nicht auf `main` gemergt | ✅ gemergt (commit 326accf) |
+| Reset-Button auf Settings sinnlos | ✅ entfernt |
+| Edit-Dialog im Dark Mode weiß | ✅ behoben — `bg-white dark:bg-stone-900` auf `<dialog>` + Inputs |
+| Selektierte Listen-Zeilen ohne Dark-Variante | ✅ behoben — `bg-green-50 dark:bg-green-900/30` |
 | Netlify-Proxy hat kein Rate-Limiting | offen |
 | Netlify-Proxy manchmal nicht erreichbar (keine Suchergebnisse für PFAF/NaturaDB) | offen |
 | Service Worker Cache-Version muss manuell erhöht werden | offen — Build-Hash automatisieren |
 | Baumscheibe-SVG-Template ist 5 MB (inline Base64-PNGs) | offen — via `svgo` / externe Raster |
+| Theme-Toggle im Header überschreibt „Auto" hart, ohne Hinweis | offen — siehe Kurzfristig „Theme-Toggle 3-State" |
