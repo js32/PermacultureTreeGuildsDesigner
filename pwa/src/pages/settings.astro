@@ -4,23 +4,114 @@ import Layout from '../layouts/Layout.astro';
 <Layout title="Perma Guild Forge — Einstellungen">
   <div class="mb-6">
     <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100">Einstellungen</h1>
-    <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Datenquellen für die Pflanzensuche konfigurieren.</p>
+    <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Datenquellen, Ansicht, Theme und Daten verwalten.</p>
   </div>
 
-  <div id="sources-list" class="space-y-4"></div>
+  <!-- Datenquellen -->
+  <section class="mb-8">
+    <h2 class="mb-3 text-lg font-semibold text-stone-800 dark:text-stone-100">Datenquellen</h2>
+    <div id="sources-list" class="space-y-4"></div>
+  </section>
 
-  <div class="mt-6 flex gap-3">
-    <button id="btn-save" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Speichern</button>
+  <!-- Ansicht -->
+  <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100">Ansicht</h2>
+    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Welche Ansicht beim App-Start gezeigt wird.</p>
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      <label class="block text-sm">
+        <span class="font-medium text-stone-700 dark:text-stone-200">Standard-Ansicht</span>
+        <select id="default-view" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 shadow-inner focus:border-green-500 focus:outline-none">
+          <option value="grid">Kacheln</option>
+          <option value="list">Liste</option>
+          <option value="cards">Karten</option>
+        </select>
+      </label>
+      <label class="block text-sm">
+        <span class="font-medium text-stone-700 dark:text-stone-200">Standard-Kartenvariante</span>
+        <select id="default-card-variant" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 shadow-inner focus:border-green-500 focus:outline-none">
+          <option value="poly">Pflanzenkarten</option>
+          <option value="stripe">Streifenkarten</option>
+          <option value="baumscheibe">Baumscheibe</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <!-- Theme -->
+  <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100">Theme</h2>
+    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">"Auto" folgt der System­einstellung deines Geräts.</p>
+    <div class="mt-3 flex flex-wrap gap-4 text-sm">
+      <label class="inline-flex items-center gap-2"><input type="radio" name="theme" value="auto" class="theme-radio accent-green-600" /> Auto</label>
+      <label class="inline-flex items-center gap-2"><input type="radio" name="theme" value="light" class="theme-radio accent-green-600" /> Hell</label>
+      <label class="inline-flex items-center gap-2"><input type="radio" name="theme" value="dark" class="theme-radio accent-green-600" /> Dunkel</label>
+    </div>
+  </section>
+
+  <!-- Privatsphäre -->
+  <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100">Privatsphäre</h2>
+    <label class="mt-3 inline-flex items-start gap-2 text-sm">
+      <input type="checkbox" id="plausible-optout" class="mt-0.5 accent-green-600" />
+      <span>
+        <span class="font-medium text-stone-700 dark:text-stone-200">Plausible-Reichweitenmessung deaktivieren</span>
+        <span class="block text-xs text-stone-500 dark:text-stone-400">Plausible erfasst keine personenbezogenen Daten — falls du trotzdem nicht gezählt werden möchtest, hier den Haken setzen. Details in der <a href="/datenschutz" class="text-green-700 dark:text-green-400 hover:underline">Datenschutzerklärung</a>.</span>
+      </span>
+    </label>
+  </section>
+
+  <div class="mb-12 flex gap-3">
+    <button id="btn-save" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Einstellungen speichern</button>
   </div>
+
+  <!-- Daten -->
+  <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100">Daten</h2>
+    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Alle Pflanzen­daten leben lokal in deinem Browser (IndexedDB).</p>
+
+    <dl class="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+      <div>
+        <dt class="text-xs font-medium text-stone-500 dark:text-stone-400">Pflanzen­datensätze</dt>
+        <dd id="stats-plants" class="font-mono text-stone-800 dark:text-stone-100">…</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-stone-500 dark:text-stone-400">Speicherverbrauch</dt>
+        <dd id="stats-storage" class="font-mono text-stone-800 dark:text-stone-100">…</dd>
+      </div>
+    </dl>
+
+    <div class="mt-4 flex flex-wrap gap-2">
+      <button id="btn-backup" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Backup herunterladen (JSON)</button>
+      <button id="btn-reload-master" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Golden Master neu laden</button>
+    </div>
+
+    <div class="mt-6 rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
+      <h3 class="text-sm font-semibold text-red-800 dark:text-red-200">Danger Zone</h3>
+      <p class="mt-1 text-xs text-red-700 dark:text-red-300">Löscht alle Pflanzendatensätze und deine Einstellungen unwiderruflich.</p>
+      <button id="btn-clear-all" class="mt-3 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-red-700 hover:bg-red-700">Alle Daten löschen</button>
+    </div>
+  </section>
 
   <div id="toast" class="fixed bottom-6 right-6 hidden rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg transition"></div>
 </Layout>
 
 <script>
-  import { loadSettings, saveSettings, DEFAULT_SOURCES, type AppSettings } from '../lib/settings';
+  import {
+    loadSettings, saveSettings,
+    getTheme, setTheme, applyTheme,
+    isPlausibleOptedOut, setPlausibleOptOut,
+    type AppSettings, type ViewMode, type CardVariant, type ThemePref,
+  } from '../lib/settings';
+  import { getAllPlants, importPlants, clearAllPlants } from '../lib/db';
 
-  const listEl = document.getElementById('sources-list')!;
+  const sourcesList = document.getElementById('sources-list')!;
   const toast = document.getElementById('toast')!;
+  const defaultView = document.getElementById('default-view') as HTMLSelectElement;
+  const defaultCardVariant = document.getElementById('default-card-variant') as HTMLSelectElement;
+  const plausibleOptout = document.getElementById('plausible-optout') as HTMLInputElement;
+  const statsPlants = document.getElementById('stats-plants')!;
+  const statsStorage = document.getElementById('stats-storage')!;
+
   let settings: AppSettings;
 
   function showToast(msg: string) {
@@ -29,16 +120,15 @@ import Layout from '../layouts/Layout.astro';
     setTimeout(() => toast.classList.add('hidden'), 2000);
   }
 
-  function render() {
-    settings = loadSettings();
-    listEl.innerHTML = settings.sources.map((src, i) => `
+  function renderSources() {
+    sourcesList.innerHTML = settings.sources.map((src, i) => `
       <div class="rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-3">
               <label class="relative inline-flex cursor-pointer items-center">
                 <input type="checkbox" class="src-enabled peer sr-only" data-idx="${i}" ${src.enabled ? 'checked' : ''} />
-                <div class="h-6 w-11 rounded-full bg-stone-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-green-600 peer-checked:after:translate-x-full"></div>
+                <div class="h-6 w-11 rounded-full bg-stone-300 dark:bg-stone-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-green-600 peer-checked:after:translate-x-full"></div>
               </label>
               <h3 class="text-sm font-bold text-stone-800 dark:text-stone-100">${src.name}</h3>
               ${src.url ? `<a href="${src.url}" target="_blank" rel="noopener" class="text-xs text-stone-400 dark:text-stone-500 hover:text-green-700 hover:underline">${new URL(src.url).hostname}</a>` : ''}
@@ -49,12 +139,12 @@ import Layout from '../layouts/Layout.astro';
         ${src.needsApiKey ? `
           <div class="mt-3">
             <label class="block text-xs font-medium text-stone-500 dark:text-stone-400">API Key
-              <input type="password" class="src-apikey mt-0.5 block w-full max-w-sm rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" data-idx="${i}" value="${src.apiKey}" placeholder="API Key eingeben..." />
+              <input type="password" class="src-apikey mt-0.5 block w-full max-w-sm rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" data-idx="${i}" value="${src.apiKey}" placeholder="API Key eingeben..." />
             </label>
           </div>
         ` : ''}
         <div class="mt-2 flex gap-2">
-          <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium ${src.id === 'wikidata' ? 'bg-blue-50 text-blue-700 dark:text-blue-300' : 'bg-amber-50 text-amber-700'}">
+          <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium ${src.id === 'wikidata' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-200'}">
             ${src.id === 'wikidata' ? 'Direkt (CORS-frei)' : 'Über Proxy (Netlify Function)'}
           </span>
         </div>
@@ -62,6 +152,40 @@ import Layout from '../layouts/Layout.astro';
     `).join('');
   }
 
+  function renderPrefs() {
+    defaultView.value = settings.defaultView;
+    defaultCardVariant.value = settings.defaultCardVariant;
+    const t = getTheme();
+    document.querySelectorAll<HTMLInputElement>('.theme-radio').forEach(r => { r.checked = r.value === t; });
+    plausibleOptout.checked = isPlausibleOptedOut();
+  }
+
+  function fmtBytes(n: number): string {
+    if (n < 1024) return `${n} B`;
+    if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} kB`;
+    return `${(n / (1024 * 1024)).toFixed(2)} MB`;
+  }
+
+  async function renderStats() {
+    const plants = await getAllPlants();
+    statsPlants.textContent = `${plants.length}`;
+    if (navigator.storage?.estimate) {
+      try {
+        const est = await navigator.storage.estimate();
+        const used = est.usage ?? 0;
+        const quota = est.quota ?? 0;
+        statsStorage.textContent = quota
+          ? `${fmtBytes(used)} / ${fmtBytes(quota)}`
+          : fmtBytes(used);
+      } catch {
+        statsStorage.textContent = '—';
+      }
+    } else {
+      statsStorage.textContent = '—';
+    }
+  }
+
+  // ── Save handler ────────────────────────────────────────────────────────
   document.getElementById('btn-save')!.addEventListener('click', () => {
     document.querySelectorAll('.src-enabled').forEach((cb) => {
       const input = cb as HTMLInputElement;
@@ -73,9 +197,65 @@ import Layout from '../layouts/Layout.astro';
       const idx = parseInt(input.dataset.idx!);
       settings.sources[idx].apiKey = input.value;
     });
+    settings.defaultView = defaultView.value as ViewMode;
+    settings.defaultCardVariant = defaultCardVariant.value as CardVariant;
     saveSettings(settings);
+
+    const themeChoice = (document.querySelector<HTMLInputElement>('.theme-radio:checked')?.value ?? 'auto') as ThemePref;
+    setTheme(themeChoice);
+    applyTheme(themeChoice);
+
+    setPlausibleOptOut(plausibleOptout.checked);
+
     showToast('Einstellungen gespeichert');
   });
 
-  render();
+  // ── Daten: Backup ───────────────────────────────────────────────────────
+  document.getElementById('btn-backup')!.addEventListener('click', async () => {
+    const plants = await getAllPlants();
+    const payload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      settings,
+      plants,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `perma-guild-forge-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // ── Daten: Golden Master neu laden ──────────────────────────────────────
+  document.getElementById('btn-reload-master')!.addEventListener('click', async () => {
+    if (!confirm('Golden-Master-Pflanzen erneut importieren? Bestehende Pflanzen mit gleicher ID werden überschrieben.')) return;
+    try {
+      const res = await fetch('/plants-db.json');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const plants = Array.isArray(data) ? data : (data.plants ?? []);
+      await importPlants(plants);
+      showToast(`${plants.length} Pflanzen importiert`);
+      await renderStats();
+    } catch (err) {
+      alert(`Import fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  });
+
+  // ── Daten: Alles löschen ────────────────────────────────────────────────
+  document.getElementById('btn-clear-all')!.addEventListener('click', async () => {
+    if (!confirm('WIRKLICH alle Pflanzen und Einstellungen löschen? Das kann nicht rückgängig gemacht werden.')) return;
+    if (!confirm('Letzte Warnung: alle Daten gehen verloren. Fortfahren?')) return;
+    await clearAllPlants();
+    try { localStorage.clear(); } catch {}
+    location.href = '/';
+  });
+
+  // ── Init ────────────────────────────────────────────────────────────────
+  settings = loadSettings();
+  renderSources();
+  renderPrefs();
+  renderStats();
 </script>

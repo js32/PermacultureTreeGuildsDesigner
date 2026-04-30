@@ -53,3 +53,8 @@ export async function importPlants(plants: PlantData[]): Promise<void> {
 export async function exportPlants(): Promise<PlantData[]> {
   return getAllPlants();
 }
+
+export async function clearAllPlants(): Promise<void> {
+  const db = await getDB();
+  await db.clear('plants');
+}

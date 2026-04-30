@@ -10,11 +10,22 @@ export interface DataSource {
   url: string;
 }
 
+export type ViewMode = 'grid' | 'list' | 'cards';
+export type CardVariant = 'poly' | 'stripe' | 'baumscheibe';
+export type ThemePref = 'auto' | 'light' | 'dark';
+
 export interface AppSettings {
   sources: DataSource[];
+  defaultView: ViewMode;
+  defaultCardVariant: CardVariant;
 }
 
 const STORAGE_KEY = "guild-designer-settings";
+
+const DEFAULT_PREFS: Omit<AppSettings, 'sources'> = {
+  defaultView: 'grid',
+  defaultCardVariant: 'poly',
+};
 
 export const DEFAULT_SOURCES: DataSource[] = [
   {
@@ -50,16 +61,19 @@ export function loadSettings(): AppSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      const saved = JSON.parse(raw) as AppSettings;
-      // Merge with defaults to pick up new sources
-      const merged = DEFAULT_SOURCES.map((def) => {
-        const existing = saved.sources.find((s) => s.id === def.id);
+      const saved = JSON.parse(raw) as Partial<AppSettings>;
+      const sources = DEFAULT_SOURCES.map((def) => {
+        const existing = saved.sources?.find((s) => s.id === def.id);
         return existing ? { ...def, enabled: existing.enabled, apiKey: existing.apiKey } : def;
       });
-      return { sources: merged };
+      return {
+        sources,
+        defaultView: saved.defaultView ?? DEFAULT_PREFS.defaultView,
+        defaultCardVariant: saved.defaultCardVariant ?? DEFAULT_PREFS.defaultCardVariant,
+      };
     }
   } catch {}
-  return { sources: DEFAULT_SOURCES.map((s) => ({ ...s })) };
+  return { sources: DEFAULT_SOURCES.map((s) => ({ ...s })), ...DEFAULT_PREFS };
 }
 
 export function saveSettings(settings: AppSettings): void {
@@ -72,4 +86,42 @@ export function isSourceEnabled(id: string): boolean {
 
 export function getApiKey(id: string): string {
   return loadSettings().sources.find((s) => s.id === id)?.apiKey ?? "";
+}
+
+// ── Theme: stored under a separate key so the pre-paint inline script in
+// Layout.astro stays independent of the JSON-encoded settings blob.
+// Values: 'light' | 'dark' | (absent = 'auto', follow OS).
+
+export function getTheme(): ThemePref {
+  try {
+    const v = localStorage.getItem('theme');
+    return v === 'light' || v === 'dark' ? v : 'auto';
+  } catch { return 'auto'; }
+}
+
+export function setTheme(t: ThemePref): void {
+  try {
+    if (t === 'auto') localStorage.removeItem('theme');
+    else localStorage.setItem('theme', t);
+  } catch {}
+}
+
+export function applyTheme(t: ThemePref): void {
+  const isDark = t === 'dark'
+    || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.classList.toggle('dark', isDark);
+}
+
+// ── Plausible Analytics opt-out: uses Plausible's official localStorage
+// key so the script honors it automatically.
+
+export function isPlausibleOptedOut(): boolean {
+  try { return localStorage.getItem('plausible_ignore') === 'true'; } catch { return false; }
+}
+
+export function setPlausibleOptOut(v: boolean): void {
+  try {
+    if (v) localStorage.setItem('plausible_ignore', 'true');
+    else localStorage.removeItem('plausible_ignore');
+  } catch {}
 }

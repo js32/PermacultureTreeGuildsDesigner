@@ -1,0 +1,114 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Perma Guild Forge — Hilfe">
+  <article class="mx-auto max-w-3xl space-y-8 text-stone-800 dark:text-stone-100">
+    <header>
+      <h1 class="text-2xl font-bold">Hilfe & Glossar</h1>
+      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">Konzepte, Ansichten und Funktionen kurz erklärt.</p>
+    </header>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Was ist eine Permakultur-Gilde?</h2>
+      <p>Eine <strong>Gilde</strong> ist eine Gruppe von Pflanzen, die sich gegenseitig fördert: Bäume,
+        Sträucher, Stauden, Bodendecker und Wurzelpflanzen werden so kombiniert, dass sie sich Nährstoffe,
+        Schatten, Bestäuber und Schädlingsabwehr teilen. Statt einer Monokultur entsteht ein kleines, sich
+        weitgehend selbst regulierendes Ökosystem rund um eine zentrale Hauptpflanze (oft ein Obstbaum).</p>
+      <p>Diese App hilft dir, Pflanzen mit ihren wichtigsten Eigenschaften zu erfassen, anzureichern und
+        als Karten zu drucken — als Grundlage, um eigene Gilden zu komponieren.</p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Ansichten</h2>
+      <dl class="space-y-3">
+        <div>
+          <dt class="font-semibold">Kacheln</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300">Übersicht mit Bildvorschau, Akzentstreifen
+            nach Primärnutzung und Vollständigkeitsbalken. Gut zum Stöbern.</dd>
+        </div>
+        <div>
+          <dt class="font-semibold">Liste</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300">Sortierbare Tabelle (Desktop) bzw. kompakte
+            Karten (Mobil) mit Nutzungs-Dots und Vollständigkeit. Ideal für Mehrfach­auswahl und Bulk-Aktionen.</dd>
+        </div>
+        <div>
+          <dt class="font-semibold">Karten</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300">Druckansicht der Pflanzenkarten — Vorschau
+            des PDF-Exports im Browser.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Karten-Varianten</h2>
+      <dl class="space-y-3">
+        <div>
+          <dt class="font-semibold">Pflanzenkarten (Polykarte)</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300">70 × 120 mm. Eine Karte pro Pflanze mit
+            Bild, Namen, Eigenschaften und Phänologie. Standardformat zum Auslegen oder Anheften.</dd>
+        </div>
+        <div>
+          <dt class="font-semibold">Streifenkarten</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300">290 × 17 mm Querformat. Kompakte Zeile pro
+            Pflanze — gut für Etiketten oder Schnellübersichten.</dd>
+        </div>
+        <div>
+          <dt class="font-semibold">Baumscheibe</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300">Großformat mit grafischer Darstellung
+            (Schichten, Sonne, Wasser, pH, Nutzung, Funktion). PDF im A4-Hochformat.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Datenquellen</h2>
+      <p>Beim Anlegen oder Anreichern werden Pflanzendaten aus verschiedenen Quellen kombiniert. Welche
+        aktiv sind, stellst du in den <a href="/settings" class="text-green-700 dark:text-green-400 hover:underline">Einstellungen</a> ein.</p>
+      <dl class="space-y-3">
+        <div>
+          <dt class="font-semibold">Wikidata</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300">Lateinische und deutsche Namen, Bilder,
+            Taxonomie. CORS-frei, direkter Zugriff aus dem Browser.</dd>
+        </div>
+        <div>
+          <dt class="font-semibold">PFAF (Plants For A Future)</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300">Nutzungs-Scores (Essbarkeit, Medizin,
+            Material), Lichtbedarf, pH, Wasserbedarf, Wachstumsrate. Über Netlify-Proxy.</dd>
+        </div>
+        <div>
+          <dt class="font-semibold">NaturaDB</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300">Deutsche Pflanzendaten: Höhe, Breite,
+            Frucht- und Blütemonate, Standortansprüche. Über Netlify-Proxy.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Visuelles Vokabular</h2>
+      <ul class="list-disc space-y-1 pl-6 text-sm text-stone-600 dark:text-stone-300">
+        <li><strong>Ausgefüllte Badges</strong> = Nutzung der Pflanze (essbar, medizinisch, Material…).</li>
+        <li><strong>Outline-Chips</strong> = Datenquelle, aus der ein Wert stammt (z.B. PFAF, NaturaDB).</li>
+        <li><strong>Akzentstreifen / -punkt</strong> = Primärnutzung in Kacheln und Listenzeile.</li>
+        <li><strong>Vollständigkeits­balken</strong> = wieviele Felder gegenüber dem Maximum gefüllt sind
+          (grün ≥ 80 %, gelb ≥ 50 %, rot darunter).</li>
+      </ul>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Daten exportieren & sichern</h2>
+      <ul class="list-disc space-y-1 pl-6 text-sm text-stone-600 dark:text-stone-300">
+        <li><strong>Backup (JSON)</strong> in den Einstellungen: kompletter Datensatz inkl. Konfiguration —
+          ideal als Sicherung oder zum Übertragen auf ein anderes Gerät.</li>
+        <li><strong>CSV / JSON-Export</strong> auf der Hauptseite: einzelne oder ausgewählte Pflanzen.</li>
+        <li><strong>PDF-Export</strong> aus der Kartenansicht: alle Karten, Streifen oder Baumscheiben.</li>
+      </ul>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">App installieren</h2>
+      <p>Auf <strong>Android / Chrome</strong> erscheint oben ein Banner „App installieren". Auf <strong>iOS
+        Safari</strong> tippe auf das Teilen-Symbol und „Zum Home-Bildschirm". Im installierten Zustand läuft
+        die App offline und ohne Browser-Chrome.</p>
+    </section>
+  </article>
+</Layout>
