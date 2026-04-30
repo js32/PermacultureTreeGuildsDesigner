@@ -9,14 +9,15 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - **Pflanzenverwaltung** — Erstellen, Bearbeiten, Löschen von Pflanzen mit ~50 Attributen (Nutzung, Ökosystemfunktionen, Sonne/Wasser/pH, Wachstum, Blüte-/Fruchtmonate)
 - **Pflanzendaten-Import** — Suche via lokale Golden-Master-DB (`plants-db.json`) + Wikidata-API (automatisch bei Import), Anreicherung via PFAF & NaturaDB (Netlify-Proxy)
 - **CSV- & JSON-Import/Export** — inkl. CSV-Vorlagen-Download
-- **Drei Ansichten** — Kachelansicht, Listenansicht (sortierbar), Kartenansicht (Poly- & Streifenkarten); Toggle in der Toolbar
+- **Drei Ansichten** — Kachelansicht, Listenansicht (sortierbar), Kartenansicht; Toggle in der Toolbar
+- **Drei Kartenvarianten** — Polykarte (70×120 mm), Streifenkarte (290×17 mm), **Baumscheibe** (SVG-Template mit Field-Mapped Overlays, A4 Hochformat)
 - **Suchleiste** — prominent, mit Lupe-Icon, floating Dropdown, Multi-Add, Wikidata/PFAF/NaturaDB-Enrichment direkt beim Import
 - **Kartenvorschau** — Live-Vorschau der Pflanzenkarten im Browser
-- **PDF-Export** — Polykarten (70×120 mm) und Streifenkarten (290×17 mm) via pdf-lib; Bulk-PDF aus Selektion
+- **PDF-Export** — Polykarten und Streifenkarten via pdf-lib (Auto-Download); Baumscheibe via pdf-lib (Chrome/Safari) bzw. nativem Druckdialog (Firefox); Bulk-PDF aus Selektion
 - **Bulk-Operationen** — Auswählen, Löschen, Ergänzen, JSON/CSV/PDF-Export ausgewählter Pflanzen
 - **Feldprovenenz** — `_sources` pro Datenpunkt; Quell-Badges im Edit-Dialog; Outline-Chips in Kacheln/Liste
 - **Einstellungsseite** — Datenquellen aktivieren/deaktivieren
-- **UI-Redesign** (Branch `ui`, noch nicht auf `main` gemergt):
+- **UI-Redesign**:
   - Kachelansicht: Bildvorschau, farbiger Akzentstreifen nach Primärnutzung, Vollständigkeitsbalken
   - Listenansicht: Akzentpunkt, Nutzungsdots-Spalte, Vollständigkeitsbalken, sortierbar nach Vollständigkeit
   - Leerer Zustand: Fiddlehead-Illustration + CTA
@@ -29,10 +30,15 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 ## Kurzfristig
 
 ### UI / UX
-- [ ] **Branch `ui` → `main` mergen** — nach finalem Review
 - [ ] **Dark Mode** — Farbsystem ist bereits strukturiert (warm=Nutzung, cool=Ökosystem); dunkle Variante ergänzen
 - [ ] **Konfigurierbare Farbthemen** — Farbenblindheits-Modus
 - [ ] **Bild-Fallback** — Silhouette nach Pflanzentyp wenn kein Foto vorhanden
+
+### Baumscheibe-Karte (Feinschliff)
+- [ ] **Fehlende Felder in der SVG ergänzen** — `inkscape:label`-Overlays für `sunFull`/`sunMid`/`sunShadow`, `waterDry`/`waterMid`/`waterWet`, `phVeryAcid`/`phVeryAlkaline`/`phSaline`, `fruitMonths`/`flowerMonths`, `pioneer`, `layer` (Schicht); Renderer findet sie automatisch
+- [ ] **Score-Sterne** — `eatableScore`/`medsScore`/`materialScore` als 5-Stern-Element in SVG anlegen (siehe `.ods`: "5 Sterne statt 4")
+- [ ] **pH-Skala auf 5 Stufen** — Grafik anpassen (sauer / leicht sauer / neutral / leicht alkalisch / alkalisch)
+- [ ] **SVG-Template optimieren** — derzeit 5 MB durch ~30 inline Base64-PNGs; via `svgo` oder externe Raster-Verlinkung verkleinern
 
 ### PDF-Rendering
 - [ ] Qualitäts-Check: Karten in mehreren Viewern testen (Chrome, Firefox, Evince, Okular)
@@ -119,11 +125,13 @@ Mögliche Migrationsstrategie: PocketBase als optionaler Sync-Layer, IndexedDB b
 | Problem | Status |
 |---|---|
 | PDF-Streifen in LibreWolf (SMask/pdf.js) | ✅ behoben — raw RGB via `flateStream`, kein SMask |
+| Baumscheibe-PDF lahm + diagonal-streifig in Firefox/pdf.js | ✅ behoben — Firefox-Pfad nutzt nativen Druckdialog (vektoriell), Chrome/Safari weiter Canvas→JPEG→pdf-lib |
 | `svg-template.ts` und `card-svg.ts` — redundant neben Canvas-Renderer | ✅ gelöscht |
 | Root-Verzeichnis enthält Build-Artefakte (`index.html`, `sw.js`, `manifest.json`) | ✅ bereinigt |
 | PowerShell-Skripte als Legacy markieren, README aktualisieren | ✅ nach `legacy/` verschoben |
 | `netlify.toml` in `pwa/` — Proxy-Functions nicht erreichbar | ✅ behoben — `netlify.toml` ins Repo-Root mit `base = "pwa"` |
+| Branch `ui` noch nicht auf `main` gemergt | ✅ gemergt (commit 326accf) |
 | Netlify-Proxy hat kein Rate-Limiting | offen |
 | Netlify-Proxy manchmal nicht erreichbar (keine Suchergebnisse für PFAF/NaturaDB) | offen |
 | Service Worker Cache-Version muss manuell erhöht werden | offen — Build-Hash automatisieren |
-| Branch `ui` noch nicht auf `main` gemergt | offen |
+| Baumscheibe-SVG-Template ist 5 MB (inline Base64-PNGs) | offen — via `svgo` / externe Raster |
