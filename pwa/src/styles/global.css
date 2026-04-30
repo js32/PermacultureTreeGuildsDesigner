@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+/* Class-based dark mode: applied when an ancestor has the .dark class.
+   Toggled on <html> by the theme switch in Layout.astro. */
+@custom-variant dark (&:where(.dark, .dark *));
