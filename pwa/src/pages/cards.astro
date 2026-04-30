@@ -9,6 +9,7 @@ import Layout from '../layouts/Layout.astro';
       <select id="view-mode" class="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-green-500 focus:ring-2 focus:ring-green-500/20 focus:outline-none">
         <option value="poly">Pflanzenkarten</option>
         <option value="stripe">Streifenkarten</option>
+        <option value="baumscheibe">Baumscheibe</option>
       </select>
       <button id="btn-pdf-all" class="inline-flex items-center gap-2 rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-green-800 focus:ring-2 focus:ring-green-500/20 focus:outline-none">
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -170,6 +171,7 @@ import Layout from '../layouts/Layout.astro';
   import { getAllPlants, savePlant } from '../lib/db';
   import { createEmptyPlant, type PlantData } from '../lib/types';
   import { renderPolyCardHtml, renderStripeCardHtml } from '../lib/card-html';
+  import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
 
   const container = document.getElementById('cards-container')!;
   const noPlants = document.getElementById('no-plants')!;
@@ -227,16 +229,22 @@ import Layout from '../layouts/Layout.astro';
     render();
   }
 
-  function render() {
+  async function render() {
     const mode = viewMode.value;
     const isStripe = mode === 'stripe';
+    const isBaumscheibe = mode === 'baumscheibe';
 
     container.className = isStripe
       ? 'flex flex-col items-stretch gap-2'
       : 'flex flex-wrap justify-center gap-6';
 
-    container.innerHTML = plants.map((p, i) => {
-      const cardHtml = isStripe ? renderStripeCardHtml(p) : renderPolyCardHtml(p);
+    const cardHtmls = await Promise.all(plants.map(async (p) => {
+      if (isBaumscheibe) return renderBaumscheibeCardHtml(p);
+      return isStripe ? renderStripeCardHtml(p) : renderPolyCardHtml(p);
+    }));
+
+    container.innerHTML = plants.map((_, i) => {
+      const cardHtml = cardHtmls[i];
       return `
         <div class="group relative rounded-xl shadow-md ring-1 ring-stone-200 transition hover:shadow-lg hover:ring-green-300 overflow-hidden" data-index="${i}">
           <div class="pointer-events-none${isStripe ? ' overflow-x-auto' : ''}">${cardHtml}</div>
@@ -270,8 +278,9 @@ import Layout from '../layouts/Layout.astro';
       pdfBtn.disabled = true;
       pdfBtn.textContent = '...';
       try {
-        const { exportSingleCardPDF } = await import('../lib/pdf-export');
-        await exportSingleCardPDF(plants[idx]);
+        const pdf = await import('../lib/pdf-export');
+        if (viewMode.value === 'baumscheibe') await pdf.exportBaumscheibePDF(plants[idx]);
+        else await pdf.exportSingleCardPDF(plants[idx]);
       } catch (err) {
         console.error('PDF generation failed:', err);
         alert(`PDF-Fehler: ${err instanceof Error ? err.message : String(err)}`);
@@ -308,8 +317,9 @@ import Layout from '../layouts/Layout.astro';
     btn.disabled = true;
     btn.textContent = 'Erstelle PDF...';
     try {
-      const { exportCardsPDF } = await import('../lib/pdf-export');
-      await exportCardsPDF(plants);
+      const pdf = await import('../lib/pdf-export');
+      if (viewMode.value === 'baumscheibe') await pdf.exportBaumscheibesPDF(plants);
+      else await pdf.exportCardsPDF(plants);
     } finally {
       btn.disabled = false;
       btn.innerHTML = '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> PDF exportieren';

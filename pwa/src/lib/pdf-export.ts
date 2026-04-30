@@ -1,5 +1,6 @@
 import { PDFDocument, PDFPage, PDFRef, degrees, drawImage as pdfDrawImage } from 'pdf-lib';
 import { renderPolyCardToCanvas, renderStripeCardToCanvas } from './card-canvas';
+import { renderBaumscheibeSvg } from './baumscheibe-render';
 import type { PlantData } from './types';
 
 // Card dimensions in mm
@@ -188,4 +189,119 @@ export async function exportSingleCardPDF(plant: PlantData): Promise<void> {
   drawCanvasOnPage(page, imageRef, 0, 0, cardW, cardH);
 
   downloadPdf(await pdfDoc.save(), `${plant.latinName || 'plant'}-card.pdf`);
+}
+
+// ── Baumscheibe (SVG template) export ────────────────────────────────────────
+
+// Firefox path: the 5 MB Baumscheibe SVG is slow to rasterize via canvas in
+// Firefox and the resulting image XObject mis-decodes in pdf.js. Use native
+// browser print instead — vector SVG, fast, correct everywhere.
+//
+// Chrome/Safari path: rasterize SVG → JPEG → embed via DCTDecode for an
+// auto-downloaded PDF (the familiar UX for the existing card exports).
+
+const isFirefox = typeof navigator !== 'undefined' && /Firefox\//.test(navigator.userAgent);
+
+// The SVG viewBox is 2286×2482 (≈ 7.62×8.27 inch).
+const BAUMSCHEIBE_MM = { w: 193.5, h: 210.2 };
+
+async function svgStringToCanvas(svg: string, width: number, height: number): Promise<HTMLCanvasElement> {
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  try {
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload  = () => resolve();
+      img.onerror = () => reject(new Error('SVG kann nicht als Bild geladen werden'));
+      img.src     = url;
+    });
+    const canvas = document.createElement('canvas');
+    canvas.width  = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(img, 0, 0, width, height);
+    return canvas;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function canvasToJpegBytes(canvas: HTMLCanvasElement, quality = 0.9): Uint8Array {
+  const dataUrl = canvas.toDataURL('image/jpeg', quality);
+  const b64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+async function embedBaumscheibePage(pdfDoc: PDFDocument, plant: PlantData) {
+  const cardW  = pt(BAUMSCHEIBE_MM.w);
+  const cardH  = pt(BAUMSCHEIBE_MM.h);
+  const page   = pdfDoc.addPage([cardW, cardH]);
+  const svg    = await renderBaumscheibeSvg(plant);
+  const w      = Math.round(BAUMSCHEIBE_MM.w / 25.4 * 150);
+  const h      = Math.round(BAUMSCHEIBE_MM.h / 25.4 * 150);
+  const canvas = await svgStringToCanvas(svg, w, h);
+  const img    = await pdfDoc.embedJpg(canvasToJpegBytes(canvas));
+  page.drawImage(img, { x: 0, y: 0, width: cardW, height: cardH });
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  } as Record<string, string>)[c]);
+}
+
+function buildPrintHtml(svgs: string[], title: string): string {
+  const pages = svgs.map((svg, i) => {
+    const scaled = svg.replace('<svg', '<svg style="width:100%;height:100%;display:block;"');
+    const pb = i < svgs.length - 1 ? ' style="page-break-after:always;"' : '';
+    return `<div class="page"${pb}>${scaled}</div>`;
+  }).join('');
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  html, body { margin: 0; padding: 0; }
+  .page { width: 100vw; height: 100vh; overflow: hidden; }
+</style></head><body>${pages}</body></html>`;
+}
+
+async function openPrintWindow(svgs: string[], title: string): Promise<void> {
+  const w = window.open('', '_blank');
+  if (!w) {
+    alert('Popup-Blocker aktiv? Bitte für diese Seite erlauben und nochmal probieren.');
+    return;
+  }
+  w.document.open();
+  w.document.write(buildPrintHtml(svgs, escapeHtml(title)));
+  w.document.close();
+  await new Promise(r => setTimeout(r, 300));
+  w.focus();
+  w.print();
+}
+
+export async function exportBaumscheibePDF(plant: PlantData): Promise<void> {
+  if (isFirefox) {
+    const svg = await renderBaumscheibeSvg(plant);
+    await openPrintWindow([svg], `${plant.latinName || 'Pflanze'} — Baumscheibe`);
+    return;
+  }
+  const pdfDoc = await PDFDocument.create();
+  await embedBaumscheibePage(pdfDoc, plant);
+  downloadPdf(await pdfDoc.save(), `${plant.latinName || 'plant'}-baumscheibe.pdf`);
+}
+
+export async function exportBaumscheibesPDF(plants: PlantData[]): Promise<void> {
+  if (plants.length === 0) return;
+  if (isFirefox) {
+    const svgs = await Promise.all(plants.map(p => renderBaumscheibeSvg(p)));
+    await openPrintWindow(svgs, 'Permakultur-Baumscheiben');
+    return;
+  }
+  const pdfDoc = await PDFDocument.create();
+  for (const plant of plants) await embedBaumscheibePage(pdfDoc, plant);
+  downloadPdf(await pdfDoc.save(), 'permaculture-baumscheiben.pdf');
 }
