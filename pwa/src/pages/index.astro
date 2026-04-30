@@ -10,7 +10,7 @@ import Layout from '../layouts/Layout.astro';
         <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/>
       </svg>
       <input type="text" id="plant-search" placeholder="Pflanze suchen — lat. oder dt. Name, z.B. Sambucus nigra"
-        class="flex-1 bg-transparent py-3.5 pl-3 pr-2 text-sm text-stone-800 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 dark:text-stone-500 focus:outline-none" autocomplete="off" />
+        class="flex-1 bg-transparent py-3.5 pl-3 pr-2 text-sm text-stone-800 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none" autocomplete="off" />
       <button id="btn-search" class="shrink-0 rounded-xl m-1.5 bg-green-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 active:scale-95">Suchen</button>
     </div>
     <!-- Floating dropdown -->
@@ -22,15 +22,15 @@ import Layout from '../layouts/Layout.astro';
     <h1 class="text-xl font-bold text-stone-800 dark:text-stone-100">Pflanzenkacheln</h1>
     <div class="flex flex-wrap gap-2">
       <button id="btn-add" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Pflanze</button>
-      <button id="btn-import" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-700">Import JSON</button>
-      <button id="btn-import-csv" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-700">Import CSV</button>
-      <button id="btn-csv-template" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-700" title="Leere CSV-Vorlage herunterladen">CSV-Vorlage ↓</button>
-      <button id="btn-export" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-700">Export</button>
-      <button id="btn-load-samples" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-700">Beispieldaten</button>
+      <button id="btn-import" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Import JSON</button>
+      <button id="btn-import-csv" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Import CSV</button>
+      <button id="btn-csv-template" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Leere CSV-Vorlage herunterladen">CSV-Vorlage ↓</button>
+      <button id="btn-export" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Export</button>
+      <button id="btn-load-samples" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Beispieldaten</button>
       <div class="flex overflow-hidden rounded-lg ring-1 ring-stone-200 dark:ring-stone-700">
         <button id="btn-view-grid" class="bg-green-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-green-800" title="Kachelansicht">⊞</button>
-        <button id="btn-view-list" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-700" title="Listenansicht">☰</button>
-        <button id="btn-view-cards" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-700" title="Kartenansicht">▤</button>
+        <button id="btn-view-list" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Listenansicht">☰</button>
+        <button id="btn-view-cards" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Kartenansicht">▤</button>
       </div>
     </div>
   </div>
@@ -46,8 +46,8 @@ import Layout from '../layouts/Layout.astro';
   <!-- Bulk bar (hidden until items selected in list view) -->
   <div id="bulk-bar" style="display:none" class="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-stone-100 dark:bg-stone-800 px-4 py-2.5 text-sm ring-1 ring-stone-200 dark:ring-stone-700">
     <span id="bulk-count" class="font-medium text-stone-700 dark:text-stone-200">0 ausgewählt</span>
-    <button id="btn-select-all" class="rounded-lg bg-white dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-50 dark:bg-stone-900 dark:hover:bg-stone-800">Alle</button>
-    <button id="btn-deselect" class="rounded-lg bg-white dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-50 dark:bg-stone-900 dark:hover:bg-stone-800">Abwählen</button>
+    <button id="btn-select-all" class="rounded-lg bg-white dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-50 dark:hover:bg-stone-800">Alle</button>
+    <button id="btn-deselect" class="rounded-lg bg-white dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-50 dark:hover:bg-stone-800">Abwählen</button>
     <span class="h-4 w-px bg-stone-300"></span>
     <button id="btn-bulk-enrich" class="rounded-lg bg-blue-100 dark:bg-blue-900/40 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60">Ergänzen</button>
     <button id="btn-bulk-delete" class="rounded-lg bg-red-100 dark:bg-red-900/40 px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">Löschen</button>
@@ -70,17 +70,17 @@ import Layout from '../layouts/Layout.astro';
         <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-4">
           <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300">Grunddaten</legend>
           <div class="grid gap-3 sm:grid-cols-2">
-            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400 dark:text-stone-500" data-field="latinName">Lateinischer Name</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="latinName">Lateinischer Name</span>
               <input type="text" id="f-latinName" required class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400 dark:text-stone-500" data-field="commonName">Deutscher Name</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="commonName">Deutscher Name</span>
               <input type="text" id="f-commonName" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400 dark:text-stone-500" data-field="heightM">Höhe (m)</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="heightM">Höhe (m)</span>
               <input type="number" id="f-heightM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400 dark:text-stone-500" data-field="widthM">Breite (m)</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="widthM">Breite (m)</span>
               <input type="number" id="f-widthM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400 dark:text-stone-500" data-field="climateZone">Klimazone</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="climateZone">Klimazone</span>
               <input type="text" id="f-climateZone" placeholder="z.B. 5-9" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400 dark:text-stone-500" data-field="imageUrl">Bild-URL</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="imageUrl">Bild-URL</span>
               <input type="url" id="f-imageUrl" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
           </div>
         </fieldset>
@@ -198,7 +198,7 @@ import Layout from '../layouts/Layout.astro';
       </div>
 
       <div class="mt-5 flex justify-end gap-2">
-        <button type="button" id="btn-cancel" class="rounded-lg px-4 py-2 text-sm font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-300 dark:ring-stone-600 transition hover:bg-stone-100 dark:bg-stone-800 dark:hover:bg-stone-700">Abbrechen</button>
+        <button type="button" id="btn-cancel" class="rounded-lg px-4 py-2 text-sm font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-300 dark:ring-stone-600 transition hover:bg-stone-100 dark:hover:bg-stone-700">Abbrechen</button>
         <button type="submit" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Speichern</button>
       </div>
     </form>
@@ -283,7 +283,7 @@ import Layout from '../layouts/Layout.astro';
     wikidata: 'border-blue-300 text-blue-500',
     pfaf:     'border-green-300 text-green-600',
     naturadb: 'border-orange-300 text-orange-500',
-    manual:   'border-stone-300 dark:border-stone-600 text-stone-500 dark:text-stone-400 dark:text-stone-500',
+    manual:   'border-stone-300 dark:border-stone-600 text-stone-500 dark:text-stone-400',
     csv:      'border-purple-300 text-purple-500',
     sample:   'border-teal-300 text-teal-500',
   };
@@ -421,7 +421,7 @@ import Layout from '../layouts/Layout.astro';
     const cardsToolbar = document.getElementById('cards-toolbar')!;
     const heading = document.querySelector('h1.text-xl') as HTMLElement | null;
     const activeClass = ['bg-green-700', 'text-white'];
-    const inactiveClass = ['bg-stone-100 dark:bg-stone-800', 'text-stone-700 dark:text-stone-200'];
+    const inactiveClass = ['bg-stone-100', 'dark:bg-stone-800', 'text-stone-700', 'dark:text-stone-200'];
     [btnGrid, btnList, btnCards].forEach(b => { b.classList.remove(...activeClass); b.classList.add(...inactiveClass); });
     const active = viewMode === 'grid' ? btnGrid : viewMode === 'list' ? btnList : btnCards;
     active.classList.remove(...inactiveClass); active.classList.add(...activeClass);
@@ -453,7 +453,7 @@ import Layout from '../layouts/Layout.astro';
   function thSort(field: typeof sortField, label: string, extraClass = ''): string {
     const active = sortField === field;
     const arrow = active ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ' ↕';
-    return `<th class="cursor-pointer select-none px-3 py-2.5 hover:text-stone-800 dark:text-stone-100 ${extraClass}" data-sort="${field}">${label}${active ? `<span class="text-green-600">${arrow}</span>` : `<span class="text-stone-300">${arrow}</span>`}</th>`;
+    return `<th class="cursor-pointer select-none px-3 py-2.5 hover:text-stone-800 ${extraClass}" data-sort="${field}">${label}${active ? `<span class="text-green-600">${arrow}</span>` : `<span class="text-stone-300">${arrow}</span>`}</th>`;
   }
 
   // ── CSV export ────────────────────────────────────────────────────────────────
@@ -593,7 +593,7 @@ import Layout from '../layouts/Layout.astro';
               fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="16" cy="11" r="1.2" fill="currentColor"/>
           </svg>
-          <p class="mb-1 text-base font-semibold text-stone-500 dark:text-stone-400 dark:text-stone-500">Noch keine Pflanzen</p>
+          <p class="mb-1 text-base font-semibold text-stone-500 dark:text-stone-400">Noch keine Pflanzen</p>
           <p class="mb-4 text-sm text-stone-400 dark:text-stone-500">Suche nach einer Pflanze oder lade Beispieldaten.</p>
           <button onclick="document.getElementById('plant-search').focus()" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Erste Pflanze suchen</button>
         </div>`;
@@ -613,8 +613,8 @@ import Layout from '../layouts/Layout.astro';
           <div class="relative z-10 flex items-center justify-between bg-white/90 dark:bg-stone-800/90 px-3 py-1.5">
             <span class="text-xs text-stone-400 dark:text-stone-500">${p.commonName || p.latinName}</span>
             <div class="flex gap-1.5">
-              <button class="btn-edit inline-flex items-center gap-1 rounded-md bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 transition hover:bg-blue-100 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 hover:text-blue-800 dark:hover:text-blue-200">Bearb.</button>
-              <button class="btn-pdf-single inline-flex items-center gap-1 rounded-md bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 transition hover:bg-green-100 dark:bg-green-900/40 dark:hover:bg-green-900/60 hover:text-green-800 dark:text-green-300 dark:hover:text-green-200">PDF</button>
+              <button class="btn-edit inline-flex items-center gap-1 rounded-md bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 transition hover:bg-blue-100 dark:hover:bg-blue-900/60 hover:text-blue-800 dark:hover:text-blue-200">Bearb.</button>
+              <button class="btn-pdf-single inline-flex items-center gap-1 rounded-md bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 transition hover:bg-green-100 dark:hover:bg-green-900/60 hover:text-green-800 dark:hover:text-green-200">PDF</button>
             </div>
           </div>
         </div>`;
@@ -651,15 +651,15 @@ import Layout from '../layouts/Layout.astro';
             <div class="mb-1 flex items-start justify-between gap-2">
               <div class="min-w-0">
                 <h3 class="truncate text-sm font-bold text-stone-800 dark:text-stone-100">${p.commonName || p.latinName}</h3>
-                <p class="truncate text-xs italic text-stone-500 dark:text-stone-400 dark:text-stone-500">${p.latinName}</p>
+                <p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${p.latinName}</p>
               </div>
               <div class="flex shrink-0 gap-1 sm:opacity-0 sm:transition sm:group-hover:opacity-100">
-                <button class="btn-enrich rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:bg-blue-900/40 dark:hover:bg-blue-900/60" title="Daten ergänzen">↻</button>
-                <button class="btn-edit rounded-md bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-700">✎</button>
-                <button class="btn-del rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100 dark:bg-red-900/40 dark:hover:bg-red-900/60">✕</button>
+                <button class="btn-enrich rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60" title="Daten ergänzen">↻</button>
+                <button class="btn-edit rounded-md bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700">✎</button>
+                <button class="btn-del rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/60">✕</button>
               </div>
             </div>
-            <div class="mb-1.5 flex gap-3 text-xs text-stone-500 dark:text-stone-400 dark:text-stone-500">
+            <div class="mb-1.5 flex gap-3 text-xs text-stone-500 dark:text-stone-400">
               ${p.heightM != null ? `<span>↕ ${p.heightM}m</span>` : ''}
               ${p.widthM != null ? `<span>↔ ${p.widthM}m</span>` : ''}
               ${p.climateZone ? `<span>Zone ${p.climateZone}</span>` : ''}
@@ -696,9 +696,9 @@ import Layout from '../layouts/Layout.astro';
       });
 
       const actionBtns = `
-        <button class="btn-enrich rounded bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:bg-blue-900/40 dark:hover:bg-blue-900/60" title="Ergänzen">↻</button>
-        <button class="btn-edit rounded bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-700">✎</button>
-        <button class="btn-del rounded bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-600 hover:bg-red-100 dark:bg-red-900/40 dark:hover:bg-red-900/60">✕</button>`;
+        <button class="btn-enrich rounded bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60" title="Ergänzen">↻</button>
+        <button class="btn-edit rounded bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700">✎</button>
+        <button class="btn-del rounded bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/60">✕</button>`;
 
       listEl.innerHTML = `
         <!-- Mobile card list (< sm) -->
@@ -711,11 +711,11 @@ import Layout from '../layouts/Layout.astro';
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <p class="truncate text-sm font-semibold text-stone-800 dark:text-stone-100">${p.commonName || p.latinName}</p>
-                  <p class="truncate text-xs italic text-stone-500 dark:text-stone-400 dark:text-stone-500">${p.latinName}</p>
+                  <p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${p.latinName}</p>
                 </div>
                 <div class="flex shrink-0 gap-1">${actionBtns}</div>
               </div>
-              <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-500 dark:text-stone-400 dark:text-stone-500">
+              <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-500 dark:text-stone-400">
                 ${p.heightM != null ? `<span>↕ ${p.heightM}m</span>` : ''}
                 ${p.widthM != null ? `<span>↔ ${p.widthM}m</span>` : ''}
                 ${p.climateZone ? `<span>Zone ${p.climateZone}</span>` : ''}
@@ -737,7 +737,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="hidden sm:block overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
-              <tr class="border-b border-stone-200 dark:border-stone-700 text-left text-xs font-medium text-stone-500 dark:text-stone-400 dark:text-stone-500">
+              <tr class="border-b border-stone-200 dark:border-stone-700 text-left text-xs font-medium text-stone-500 dark:text-stone-400">
                 <th class="w-8 px-3 py-2.5"><input type="checkbox" id="select-all-check" class="accent-green-600" ${allSelected ? 'checked' : ''} /></th>
                 ${thSort('commonName', 'Name')}
                 ${thSort('latinName', 'Lateinisch')}
@@ -750,7 +750,7 @@ import Layout from '../layouts/Layout.astro';
             </thead>
             <tbody class="divide-y divide-stone-100">
               ${rowData.map(({ p, srcHtml, sel, pct, barColor, useDots }) => `
-              <tr data-id="${p.id}" class="hover:bg-stone-50 dark:bg-stone-900 dark:hover:bg-stone-800 ${sel ? 'bg-green-50' : ''}">
+              <tr data-id="${p.id}" class="hover:bg-stone-50 dark:hover:bg-stone-800 ${sel ? 'bg-green-50' : ''}">
                 <td class="px-3 py-2"><input type="checkbox" class="row-check accent-green-600" ${sel ? 'checked' : ''} /></td>
                 <td class="px-3 py-2">
                   <div class="flex items-center gap-1.5">
@@ -758,7 +758,7 @@ import Layout from '../layouts/Layout.astro';
                     <span class="font-medium text-stone-800 dark:text-stone-100">${p.commonName || p.latinName}</span>
                   </div>
                 </td>
-                <td class="px-3 py-2 italic text-stone-500 dark:text-stone-400 dark:text-stone-500">${p.latinName}</td>
+                <td class="px-3 py-2 italic text-stone-500 dark:text-stone-400">${p.latinName}</td>
                 <td class="px-3 py-2 text-stone-400 dark:text-stone-500">${p.heightM != null ? p.heightM + 'm' : '—'}</td>
                 <td class="px-3 py-2"><div class="flex gap-0.5">${useDots}</div></td>
                 <td class="px-3 py-2">
@@ -978,10 +978,10 @@ import Layout from '../layouts/Layout.astro';
       const results = await searchPlants(q);
       if (results.length === 0) { searchResults.innerHTML = '<p class="px-4 py-3 text-sm text-stone-400 dark:text-stone-500">Keine Ergebnisse.</p>'; return; }
       searchResults.innerHTML = results.map((r, i) => `
-        <div class="flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-stone-50 dark:bg-stone-900 dark:hover:bg-stone-800 transition" data-idx="${i}">
+        <div class="flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-800 transition" data-idx="${i}">
           <div class="min-w-0">
             <p class="truncate text-sm font-medium text-stone-800 dark:text-stone-100">${r.commonName || r.latinName}</p>
-            ${r.latinName ? `<p class="truncate text-xs italic text-stone-500 dark:text-stone-400 dark:text-stone-500">${r.latinName}</p>` : ''}
+            ${r.latinName ? `<p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${r.latinName}</p>` : ''}
             ${r.description ? `<p class="truncate text-xs text-stone-400 dark:text-stone-500">${r.description}</p>` : ''}
             <p class="import-status text-xs text-green-600"></p>
           </div>

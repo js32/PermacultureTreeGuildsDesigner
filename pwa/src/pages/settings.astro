@@ -4,14 +4,14 @@ import Layout from '../layouts/Layout.astro';
 <Layout title="Perma Guild Forge — Einstellungen">
   <div class="mb-6">
     <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100">Einstellungen</h1>
-    <p class="mt-1 text-sm text-stone-500 dark:text-stone-400 dark:text-stone-500">Datenquellen für die Pflanzensuche konfigurieren.</p>
+    <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Datenquellen für die Pflanzensuche konfigurieren.</p>
   </div>
 
   <div id="sources-list" class="space-y-4"></div>
 
   <div class="mt-6 flex gap-3">
     <button id="btn-save" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Speichern</button>
-    <button id="btn-reset" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-4 py-2 text-sm font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-300 dark:ring-stone-600 transition hover:bg-stone-200 dark:bg-stone-700 dark:hover:bg-stone-700">Zurücksetzen</button>
+    <button id="btn-reset" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-4 py-2 text-sm font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-300 dark:ring-stone-600 transition hover:bg-stone-200 dark:hover:bg-stone-700">Zurücksetzen</button>
   </div>
 
   <div id="toast" class="fixed bottom-6 right-6 hidden rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg transition"></div>
@@ -39,17 +39,17 @@ import Layout from '../layouts/Layout.astro';
             <div class="flex items-center gap-3">
               <label class="relative inline-flex cursor-pointer items-center">
                 <input type="checkbox" class="src-enabled peer sr-only" data-idx="${i}" ${src.enabled ? 'checked' : ''} />
-                <div class="h-6 w-11 rounded-full bg-stone-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white dark:bg-stone-800 after:shadow after:transition-all peer-checked:bg-green-600 peer-checked:after:translate-x-full"></div>
+                <div class="h-6 w-11 rounded-full bg-stone-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-green-600 peer-checked:after:translate-x-full"></div>
               </label>
               <h3 class="text-sm font-bold text-stone-800 dark:text-stone-100">${src.name}</h3>
-              ${src.url ? `<a href="${src.url}" target="_blank" rel="noopener" class="text-xs text-stone-400 dark:text-stone-500 hover:text-green-700 dark:text-green-400 hover:underline">${new URL(src.url).hostname}</a>` : ''}
+              ${src.url ? `<a href="${src.url}" target="_blank" rel="noopener" class="text-xs text-stone-400 dark:text-stone-500 hover:text-green-700 hover:underline">${new URL(src.url).hostname}</a>` : ''}
             </div>
-            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400 dark:text-stone-500">${src.description}</p>
+            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">${src.description}</p>
           </div>
         </div>
         ${src.needsApiKey ? `
           <div class="mt-3">
-            <label class="block text-xs font-medium text-stone-500 dark:text-stone-400 dark:text-stone-500">API Key
+            <label class="block text-xs font-medium text-stone-500 dark:text-stone-400">API Key
               <input type="password" class="src-apikey mt-0.5 block w-full max-w-sm rounded-md border border-stone-300 dark:border-stone-600 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" data-idx="${i}" value="${src.apiKey}" placeholder="API Key eingeben..." />
             </label>
           </div>
