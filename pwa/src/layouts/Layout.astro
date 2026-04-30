@@ -14,6 +14,10 @@ const { title } = Astro.props;
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
+    <!-- Plausible Analytics (cookieless, no personal data, EU-hosted).
+         Skipped on localhost by the script itself. Update data-domain when the
+         site moves to a custom domain. -->
+    <script defer data-domain="permaculture-guild-designer.netlify.app" src="https://plausible.io/js/script.js"></script>
     <script is:inline>
       // Apply theme before paint to avoid a flash of light UI in dark mode.
       (function () {
