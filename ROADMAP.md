@@ -83,9 +83,67 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 ## Mittelfristig
 
 ### Gilden-Komposition
-- [ ] Gilde-Objekt: benannte Gruppe von Pflanzen mit Rolle (Ankerart, Begleiter, Bodendecker …)
-- [ ] Gilden-Übersicht: Welche Pflanzen funktionieren zusammen?
-- [ ] Einfache Kompatibilitätsmatrix (Sonne/Wasser/pH-Abgleich)
+
+Eine **Gilde** ist eine benannte Gruppe von Pflanzen rund um eine Ankerart
+(typischerweise ein Obstbaum), die sich gegenseitig fördert: Stickstofffixierer
+versorgen, Bodendecker halten Feuchtigkeit, Insektenpflanzen locken Bestäuber,
+Schädlings­konfusoren stören Schadinsekten, Mineraliensammler holen Nährstoffe
+aus der Tiefe.
+
+**Phase 1 — MVP (mechanische Vorschläge aus eigenen Daten)**
+
+- [ ] **Datenmodell** — neuer IndexedDB-Store `guilds`:
+  ```ts
+  interface Guild {
+    id: string;
+    name: string;
+    description: string;
+    anchorPlantId: string;       // Hauptbaum/-strauch aus eigenem Bestand
+    members: GuildMember[];
+    notes: string;
+  }
+  interface GuildMember {
+    plantId: string;
+    role: 'companion' | 'groundCover' | 'nFixer' | 'mineralFixer'
+        | 'insectary' | 'pestConfuser' | 'fruitProducer' | 'other';
+    notes: string;
+  }
+  ```
+- [ ] **Seite `/gilden`** — Liste aller Gilden als Karten (Anker-Bild + Mitglieder-Chips
+  + Vollständigkeits-Indikator: welche Rollen besetzt, welche fehlen).
+- [ ] **Editor `/gilden/[id]`** — links die Gilde mit Rollen-Slots zum Befüllen,
+  rechts ein „Vorschläge"-Panel das die eigenen Pflanzen filtert nach:
+  - **Rolle füllt Lücke?** (z.B. Pflanze mit `nitrogenFix=true`, wenn N-Fixer-Slot leer ist)
+  - **Sonne/Wasser/pH überlappen** mit Ankerart und bestehenden Mitgliedern (Schnittmenge ≠ ∅)
+  - **Höhe passt ins Schichtmodell** (Anker oben, Begleiter darunter, Bodendecker unten)
+  - **Klimazone** kompatibel
+- [ ] **Bulk-Add aus Mehrfach­auswahl** — in der Pflanzenliste „Auswahl zur Gilde X hinzufügen"
+- [ ] **PDF-Export einer Gilde** — Pflanzkarten der Mitglieder als Set, optional Übersichtsseite
+
+**Phase 2 — Kuratiertes Companion-Wissen**
+
+- [ ] **`companions.json` als Golden Master** — bekannt gute Kombinationen aus Standard­literatur
+  (Jacke & Toensmeier "Edible Forest Gardens", Crawford "Creating a Forest Garden",
+  Hemenway "Gaia's Garden"). Format z.B.:
+  ```json
+  { "anchor": "Malus domestica",
+    "companions": [
+      { "latin": "Symphytum officinale", "role": "mineralFixer", "evidence": "Crawford" },
+      { "latin": "Allium schoenoprasum", "role": "pestConfuser", "evidence": "Hemenway" }
+    ],
+    "antagonists": ["Juglans regia"]
+  }
+  ```
+- [ ] **Vorschläge erweitern** — neben den mechanischen Filtern Empfehlungen aus der
+  Companion-Datenbank einblenden, mit Quelle als Beleg
+- [ ] **Inkompatibilitäts-Warnung** — z.B. Walnuss-Allelopathie (Juglone hemmt viele Pflanzen)
+- [ ] **Pflege-Workflow** für Companion-Daten — wie kommen neue Einträge rein? (PR-Prozess)
+
+**Phase 3 — Visualisierung (verzahnt mit Visuelles Layout)**
+
+- [ ] **Schicht-Diagramm pro Gilde** — Baumkrone → Strauch → Staude → Bodendecker → Wurzel,
+  Mitglieder visuell auf ihrer Höhen­ebene
+- [ ] **Kompatibilitäts-Matrix** als Heatmap zwischen allen Mitgliedern (Sonne/Wasser/pH/Allelopathie)
 
 ### Visuelles Layout
 - [ ] Pflanzplan-Ansicht: Bäume/Sträucher als Kreise auf einem 2D-Raster platzieren

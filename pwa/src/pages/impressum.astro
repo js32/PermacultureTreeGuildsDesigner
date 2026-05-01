@@ -2,8 +2,60 @@
 import Layout from '../layouts/Layout.astro';
 ---
 <Layout title="Perma Guild Forge — Impressum">
-  <article class="mx-auto max-w-3xl space-y-4 text-stone-800 dark:text-stone-100">
+  <article class="mx-auto max-w-3xl space-y-6 text-stone-800 dark:text-stone-100">
     <h1 class="text-2xl font-bold">Impressum</h1>
-    <p class="text-stone-500 dark:text-stone-400">Wird ergänzt.</p>
+    <p class="text-sm text-stone-500 dark:text-stone-400">Angaben gemäß § 5 TMG</p>
+
+    <!--
+      Vor öffentlichem Launch alle Platzhalter [in eckigen Klammern] mit den
+      tatsächlichen Daten ersetzen. Pflicht in DE: Name + ladungsfähige
+      Anschrift + Kontakt. Bei Vereinen / GmbH zusätzlich Vertretungsberechtigte
+      und ggf. Registergericht / -nummer und USt-ID.
+    -->
+
+    <section class="space-y-1">
+      <h2 class="text-base font-semibold">Anbieter</h2>
+      <p class="leading-relaxed">
+        [Vor- und Nachname]<br>
+        [Straße und Hausnummer]<br>
+        [PLZ und Ort]<br>
+        [Land]
+      </p>
+    </section>
+
+    <section class="space-y-1">
+      <h2 class="text-base font-semibold">Kontakt</h2>
+      <p>E-Mail: <a class="text-green-700 dark:text-green-400 hover:underline" href="mailto:[E-Mail-Adresse]">[E-Mail-Adresse]</a></p>
+      <p>Telefon (optional): [Telefonnummer]</p>
+    </section>
+
+    <section class="space-y-1">
+      <h2 class="text-base font-semibold">Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+      <p>[Vor- und Nachname], [Anschrift wie oben]</p>
+    </section>
+
+    <section class="space-y-1">
+      <h2 class="text-base font-semibold">Haftung für Inhalte</h2>
+      <p class="text-sm">Die Inhalte dieser Seite wurden mit größtmöglicher Sorgfalt erstellt. Für die
+        Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden.
+        Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene Inhalte auf diesen Seiten verantwortlich.
+        Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte
+        fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.</p>
+    </section>
+
+    <section class="space-y-1">
+      <h2 class="text-base font-semibold">Haftung für Links</h2>
+      <p class="text-sm">Die Anwendung verlinkt auf externe Quellen (u.a. Wikidata, PFAF, NaturaDB, Wikimedia Commons).
+        Auf den Inhalt dieser externen Seiten haben wir keinen Einfluss. Für die Inhalte der verlinkten Seiten ist
+        stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.</p>
+    </section>
+
+    <section class="space-y-1">
+      <h2 class="text-base font-semibold">Urheberrecht</h2>
+      <p class="text-sm">Der Quellcode dieser Anwendung steht unter der im
+        <a class="text-green-700 dark:text-green-400 hover:underline" href="https://github.com/js32/PermacultureTreeGuildsDesigner" target="_blank" rel="noopener">GitHub-Repository</a>
+        angegebenen Lizenz. Pflanzendaten stammen aus den jeweils genannten Quellen unter deren Lizenzbedingungen
+        (Wikidata: CC0, PFAF: CC BY-NC-SA 4.0, Wikimedia Commons: jeweilige Bildlizenz).</p>
+    </section>
   </article>
 </Layout>
