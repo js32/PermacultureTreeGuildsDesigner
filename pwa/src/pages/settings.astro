@@ -82,6 +82,10 @@ import Layout from '../layouts/Layout.astro';
 
     <div class="mt-4 flex flex-wrap gap-2">
       <button id="btn-backup" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Backup herunterladen (JSON)</button>
+      <label class="cursor-pointer rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">
+        Backup einlesen…
+        <input type="file" id="restore-input" accept=".json,application/json" class="hidden" />
+      </label>
       <button id="btn-reload-master" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Golden Master neu laden</button>
     </div>
 
@@ -226,6 +230,38 @@ import Layout from '../layouts/Layout.astro';
     a.download = `perma-guild-forge-backup-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  });
+
+  // ── Daten: Backup einlesen ──────────────────────────────────────────────
+  (document.getElementById('restore-input') as HTMLInputElement | null)?.addEventListener('change', async (e) => {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const plants = Array.isArray(data) ? data : (data.plants ?? []);
+      if (!Array.isArray(plants) || plants.length === 0) {
+        throw new Error('Keine Pflanzen im Backup gefunden');
+      }
+      const restoreSettings = !Array.isArray(data) && data.settings;
+      const msg = restoreSettings
+        ? `${plants.length} Pflanzen + Einstellungen aus Backup einlesen? Bestehende Pflanzen mit gleicher ID werden überschrieben.`
+        : `${plants.length} Pflanzen aus Backup einlesen? Bestehende Pflanzen mit gleicher ID werden überschrieben.`;
+      if (!confirm(msg)) { input.value = ''; return; }
+      await importPlants(plants);
+      if (restoreSettings) {
+        saveSettings(data.settings);
+        settings = loadSettings();
+        renderSources(); renderPrefs();
+      }
+      showToast(`${plants.length} Pflanzen wiederhergestellt`);
+      await renderStats();
+    } catch (err) {
+      alert(`Backup-Import fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      input.value = '';
+    }
   });
 
   // ── Daten: Golden Master neu laden ──────────────────────────────────────

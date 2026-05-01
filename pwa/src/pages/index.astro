@@ -44,6 +44,26 @@ import Layout from '../layouts/Layout.astro';
     <button id="btn-pdf-all" class="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow transition hover:bg-green-800">PDF ↓</button>
   </div>
 
+  <!-- Lokal-Filter (chips, AND-Logik) -->
+  <div id="filter-bar" class="mb-4 flex flex-wrap items-center gap-2 text-xs">
+    <span class="text-stone-500 dark:text-stone-400">Filter:</span>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="eatable">Essbar</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="meds">Medizinisch</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="material">Material</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="nitrogenFix">N-Fixer</button>
+    <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunFull">Volle Sonne</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunMid">Halbschatten</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunShadow">Schatten</button>
+    <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="waterDry">Trocken</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="waterMid">Mittel</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="waterWet">Nass</button>
+    <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
+    <button id="btn-filter-clear" class="hidden rounded-full bg-stone-200 dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-300 dark:hover:bg-stone-700">Zurücksetzen ×</button>
+    <span id="filter-count" class="hidden text-stone-500 dark:text-stone-400"></span>
+  </div>
+
   <!-- Bulk bar (hidden until items selected in list view) -->
   <div id="bulk-bar" style="display:none" class="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-stone-100 dark:bg-stone-800 px-4 py-2.5 text-sm ring-1 ring-stone-200 dark:ring-stone-700">
     <span id="bulk-count" class="font-medium text-stone-700 dark:text-stone-200">0 ausgewählt</span>
@@ -237,8 +257,25 @@ import Layout from '../layouts/Layout.astro';
   let selectedIds = new Set<string>();
   let editingPlant: PlantData | null = null;
   let cachedPlants: PlantData[] = [];
+  let lastCheckedId: string | null = null;
   let sortField: 'commonName' | 'latinName' | 'heightM' | 'completeness' = 'commonName';
   let sortDir: 'asc' | 'desc' = 'asc';
+
+  // Active filters: Set of PlantData boolean field names (AND logic).
+  const activeFilters: Set<string> = (() => {
+    try {
+      const raw = localStorage.getItem('plant-filters');
+      if (raw) return new Set(JSON.parse(raw));
+    } catch {}
+    return new Set<string>();
+  })();
+  function persistFilters() {
+    try { localStorage.setItem('plant-filters', JSON.stringify([...activeFilters])); } catch {}
+  }
+  function applyFilters(plants: PlantData[]): PlantData[] {
+    if (activeFilters.size === 0) return plants;
+    return plants.filter(p => [...activeFilters].every(f => Boolean((p as any)[f])));
+  }
 
   const textFields = ['latinName', 'commonName', 'climateZone', 'imageUrl'] as const;
   const numberFields = ['heightM', 'widthM', 'eatableScore', 'medsScore', 'materialScore'] as const;
@@ -605,7 +642,9 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
 
-    const displayPlants = viewMode === 'list' ? sortedPlants(cachedPlants) : cachedPlants;
+    const filtered = applyFilters(cachedPlants);
+    const displayPlants = viewMode === 'list' ? sortedPlants(filtered) : filtered;
+    syncFilterChips(filtered.length, cachedPlants.length);
 
     if (viewMode === 'cards') {
       const isStripe = cardViewMode === 'stripe';
@@ -811,22 +850,42 @@ import Layout from '../layouts/Layout.astro';
 
       // row-check: use data-id from closest ancestor instead of array index
       // (needed because mobile + desktop both render checkboxes)
-      listEl.querySelectorAll<HTMLInputElement>('.row-check').forEach(cb => {
-        cb.addEventListener('change', (e) => {
+      // Shift-click on a row checkbox selects every row between the previous
+      // click and the current one — standard list-selection ergonomics.
+      const rowChecks = Array.from(listEl.querySelectorAll<HTMLInputElement>('.row-check'));
+      rowChecks.forEach(cb => {
+        cb.addEventListener('click', (e) => {
+          const ev = e as MouseEvent;
           const row = cb.closest('[data-id]') as HTMLElement | null;
           if (!row) return;
           const id = row.dataset.id!;
-          if ((e.target as HTMLInputElement).checked) selectedIds.add(id);
-          else selectedIds.delete(id);
+          const willCheck = cb.checked; // post-click state
+
+          if (ev.shiftKey && lastCheckedId && lastCheckedId !== id) {
+            const ids = rowChecks
+              .map(c => (c.closest('[data-id]') as HTMLElement | null)?.dataset.id)
+              .filter((v): v is string => !!v);
+            const a = ids.indexOf(lastCheckedId);
+            const b = ids.indexOf(id);
+            if (a !== -1 && b !== -1) {
+              const [from, to] = a < b ? [a, b] : [b, a];
+              for (let i = from; i <= to; i++) {
+                if (willCheck) selectedIds.add(ids[i]); else selectedIds.delete(ids[i]);
+              }
+            }
+          } else {
+            if (willCheck) selectedIds.add(id); else selectedIds.delete(id);
+          }
+          lastCheckedId = id;
           updateBulkBar();
-          // Sync both mobile card and desktop row highlight
-          listEl.querySelectorAll<HTMLElement>(`[data-id="${id}"]`).forEach(el => {
-            if (selectedIds.has(id)) el.classList.add('bg-green-50', 'dark:bg-green-900/30');
-            else el.classList.remove('bg-green-50', 'dark:bg-green-900/30');
-          });
-          // Sync sibling checkbox in the other view
-          listEl.querySelectorAll<HTMLInputElement>(`[data-id="${id}"] .row-check`).forEach(sibling => {
-            sibling.checked = selectedIds.has(id);
+          // Sync all rows + sibling checkboxes
+          listEl.querySelectorAll<HTMLElement>('[data-id]').forEach(el => {
+            const rid = el.dataset.id!;
+            const sel = selectedIds.has(rid);
+            el.classList.toggle('bg-green-50', sel);
+            el.classList.toggle('dark:bg-green-900/30', sel);
+            const checkbox = el.querySelector<HTMLInputElement>('.row-check');
+            if (checkbox) checkbox.checked = sel;
           });
         });
       });
@@ -1099,6 +1158,61 @@ import Layout from '../layouts/Layout.astro';
     ?.setAttribute('value', cardViewMode);
   const cardSelect = document.getElementById('card-type-select') as HTMLSelectElement | null;
   if (cardSelect) cardSelect.value = cardViewMode;
+
+  // ── Filter chips ───────────────────────────────────────────────────────
+  function syncFilterChips(shown: number, total: number) {
+    document.querySelectorAll<HTMLButtonElement>('.filter-chip').forEach(btn => {
+      const f = btn.dataset.filter!;
+      const active = activeFilters.has(f);
+      btn.classList.toggle('bg-green-700', active);
+      btn.classList.toggle('text-white', active);
+      btn.classList.toggle('ring-green-700', active);
+      btn.classList.toggle('bg-stone-100', !active);
+      btn.classList.toggle('dark:bg-stone-800', !active);
+      btn.classList.toggle('text-stone-600', !active);
+      btn.classList.toggle('dark:text-stone-300', !active);
+    });
+    const clearBtn = document.getElementById('btn-filter-clear')!;
+    const countEl = document.getElementById('filter-count')!;
+    if (activeFilters.size > 0) {
+      clearBtn.classList.remove('hidden');
+      countEl.classList.remove('hidden');
+      countEl.textContent = `${shown} von ${total} angezeigt`;
+    } else {
+      clearBtn.classList.add('hidden');
+      countEl.classList.add('hidden');
+    }
+  }
+  document.querySelectorAll<HTMLButtonElement>('.filter-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const f = btn.dataset.filter!;
+      if (activeFilters.has(f)) activeFilters.delete(f); else activeFilters.add(f);
+      persistFilters();
+      renderList();
+    });
+  });
+  document.getElementById('btn-filter-clear')!.addEventListener('click', () => {
+    activeFilters.clear();
+    persistFilters();
+    renderList();
+  });
+
+  // ── Keyboard shortcuts ──────────────────────────────────────────────────
+  document.addEventListener('keydown', (e) => {
+    const t = e.target as HTMLElement | null;
+    const inField = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
+    // Esc closes any open dialog regardless of focus location.
+    if (e.key === 'Escape') {
+      const open = document.querySelector('dialog[open]') as HTMLDialogElement | null;
+      if (open) { open.close(); return; }
+    }
+    if (inField || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === '/') { e.preventDefault(); searchInput.focus(); searchInput.select(); return; }
+    if (e.key === 'n') { e.preventDefault(); document.getElementById('btn-add')!.click(); return; }
+    if (e.key === 'g') { e.preventDefault(); document.getElementById('btn-view-grid')!.click(); return; }
+    if (e.key === 'l') { e.preventDefault(); document.getElementById('btn-view-list')!.click(); return; }
+    if (e.key === 'c') { e.preventDefault(); document.getElementById('btn-view-cards')!.click(); return; }
+  });
 
   updateViewButtons();
   renderList();

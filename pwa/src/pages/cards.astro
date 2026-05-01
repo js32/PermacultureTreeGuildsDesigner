@@ -222,6 +222,10 @@ import Layout from '../layouts/Layout.astro';
 
     if (plants.length === 0) {
       noPlants.classList.remove('hidden');
+      // Hide top toolbar so the empty CTA isn't drowned out by inactive buttons.
+      (document.getElementById('view-mode') as HTMLSelectElement).disabled = true;
+      (document.getElementById('btn-pdf-all') as HTMLButtonElement).disabled = true;
+      (document.getElementById('btn-pdf-all') as HTMLButtonElement).classList.add('opacity-40', 'cursor-not-allowed');
       return;
     }
 

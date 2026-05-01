@@ -7,14 +7,14 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/version-sw.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
     "@netlify/functions": "^5.2.0",
     "@tailwindcss/vite": "^4.2.2",
-    "astro": "^6.1.5",
+    "astro": "^6.2.1",
     "idb": "^8.0.3",
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
