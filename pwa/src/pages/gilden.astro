@@ -72,13 +72,17 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { getAllPlants } from '../lib/db';
+  import { getAllPlants, savePlant } from '../lib/db';
   import { getAllGuilds, getGuild, saveGuild, deleteGuild } from '../lib/db';
+  import { searchPlants, importPlantFromSearch } from '../lib/plant-search';
   import {
     createEmptyGuild,
     ROLE_LABEL, ROLE_REQUIREMENT,
     type Guild, type GuildMember, type GuildRole, type PlantData,
   } from '../lib/types';
+
+  type RoleSuggestion = { latin: string; common: string };
+  let curatedByRole: Partial<Record<GuildRole, RoleSuggestion[]>> = {};
 
   const ROLES: GuildRole[] = ['companion','groundCover','nFixer','mineralFixer','insectary','pestConfuser','fruitProducer','other'];
 
@@ -245,10 +249,26 @@ import Layout from '../layouts/Layout.astro';
         .sort((a, b) => b.score - a.score)
         .slice(0, 5);
 
-      if (candidates.length === 0) {
+      const curatedAvailable = (curatedByRole[role] ?? []).filter(s => !findByLatin(s.latin));
+
+      if (candidates.length === 0 && curatedAvailable.length === 0) {
         return `<details class="mb-2 rounded-md bg-white dark:bg-stone-800 p-2 ring-1 ring-stone-200 dark:ring-stone-700">
           <summary class="cursor-pointer text-xs font-medium text-stone-500 dark:text-stone-400">${ROLE_LABEL[role]} <span class="text-stone-400">— keine passenden Pflanzen</span></summary>
         </details>`;
+      }
+      if (candidates.length === 0) {
+        // Nur kuratierte Vorschläge — Block trotzdem zeigen, mit Hinweis.
+        const curatedHtml = curatedAvailable.slice(0, 6).map(s => `
+          <div class="flex items-center justify-between gap-2 rounded px-2 py-1 text-xs italic text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-700">
+            <span class="min-w-0 flex-1 truncate" title="${s.common} (${s.latin}) — noch nicht in deinem Bestand">${s.common} <span class="font-mono not-italic text-[10px] text-stone-400">${s.latin}</span></span>
+            <button data-import-latin="${s.latin}" data-import-role="${role}" class="shrink-0 rounded bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 font-medium not-italic text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60">↓ importieren</button>
+          </div>`).join('');
+        return `
+          <div class="mb-3 rounded-md bg-white dark:bg-stone-800 p-2 ring-1 ring-stone-200 dark:ring-stone-700">
+            <div class="mb-1 px-1 text-xs font-semibold text-stone-700 dark:text-stone-200">${ROLE_LABEL[role]}</div>
+            <p class="mb-1 px-1 text-[10px] text-stone-500 dark:text-stone-400">Du hast keine Pflanze für diese Rolle. Bekannte Vertreter zum Importieren:</p>
+            ${curatedHtml}
+          </div>`;
       }
       const items = candidates.map(({ p, score }) => `
         <div class="flex items-center justify-between gap-2 rounded px-2 py-1 text-xs hover:bg-stone-100 dark:hover:bg-stone-700">
@@ -256,10 +276,29 @@ import Layout from '../layouts/Layout.astro';
           <span class="shrink-0 font-mono text-[10px] text-stone-400" title="Sonne/Wasser/pH-Übereinstimmung">${score}/3</span>
           <button data-add-plant="${p.id}" data-add-role="${role}" class="shrink-0 rounded bg-green-100 dark:bg-green-900/40 px-2 py-0.5 font-medium text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60">+ hinzufügen</button>
         </div>`).join('');
+
+      // Kuratierte Vorschläge aus role-suggestions.json, die noch nicht im Bestand sind.
+      const curatedHtml = (curatedByRole[role] ?? [])
+        .filter(s => !findByLatin(s.latin))
+        .slice(0, 6)
+        .map(s => `
+          <div class="flex items-center justify-between gap-2 rounded px-2 py-1 text-xs italic text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-700">
+            <span class="min-w-0 flex-1 truncate" title="${s.common} (${s.latin}) — noch nicht in deinem Bestand">${s.common} <span class="font-mono not-italic text-[10px] text-stone-400">${s.latin}</span></span>
+            <button data-import-latin="${s.latin}" data-import-role="${role}" class="shrink-0 rounded bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 font-medium not-italic text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60">↓ importieren</button>
+          </div>`).join('');
+
+      const curatedSection = curatedHtml
+        ? `<div class="mt-1 border-t border-stone-100 dark:border-stone-700 pt-1">
+             <div class="mb-1 px-1 text-[10px] font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500">Bekannte Vertreter</div>
+             ${curatedHtml}
+           </div>`
+        : '';
+
       return `
         <div class="mb-3 rounded-md bg-white dark:bg-stone-800 p-2 ring-1 ring-stone-200 dark:ring-stone-700">
           <div class="mb-1 px-1 text-xs font-semibold text-stone-700 dark:text-stone-200">${ROLE_LABEL[role]}</div>
           ${items}
+          ${curatedSection}
         </div>`;
     });
 
@@ -275,14 +314,62 @@ import Layout from '../layouts/Layout.astro';
         renderSuggestions();
       });
     });
+    suggestions.querySelectorAll<HTMLButtonElement>('[data-import-latin]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (btn.disabled) return;
+        const latin = btn.dataset.importLatin!;
+        const role = btn.dataset.importRole as GuildRole;
+        const original = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = '…';
+        try {
+          const plant = await importByLatin(latin);
+          if (!plant) throw new Error('keine Treffer');
+          editing!.members.push({ plantId: plant.id, role, notes: '' });
+          renderMembers();
+          renderSuggestions();
+          showToast(`${plant.commonName || plant.latinName} importiert`);
+        } catch (err) {
+          alert(`Import von „${latin}" fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
+          btn.disabled = false;
+          btn.textContent = original;
+        }
+      });
+    });
   }
 
   // ── Init + handlers ────────────────────────────────────────────────────
+  async function loadCurated() {
+    try {
+      const res = await fetch('/role-suggestions.json');
+      if (res.ok) curatedByRole = await res.json();
+    } catch { /* offline first run, no curated suggestions */ }
+  }
+
   async function init() {
+    await loadCurated();
     plants = await getAllPlants();
     plantsById = new Map(plants.map(p => [p.id, p]));
     guilds = await getAllGuilds();
     renderList();
+  }
+
+  // Latin-name → existing plant, case-insensitive (used to skip curated items
+  // already in bestand).
+  function findByLatin(latin: string): PlantData | undefined {
+    const target = latin.toLowerCase();
+    return plants.find(p => p.latinName.toLowerCase() === target);
+  }
+
+  async function importByLatin(latin: string): Promise<PlantData | null> {
+    const results = await searchPlants(latin);
+    const match = results.find(r => r.latinName.toLowerCase() === latin.toLowerCase()) ?? results[0];
+    if (!match) return null;
+    const plant = await importPlantFromSearch(match);
+    await savePlant(plant);
+    plants = await getAllPlants();
+    plantsById = new Map(plants.map(p => [p.id, p]));
+    return plant;
   }
 
   document.getElementById('btn-new-guild')!.addEventListener('click', () => openEditor(null));

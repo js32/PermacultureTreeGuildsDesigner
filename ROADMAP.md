@@ -145,6 +145,20 @@ aus der Tiefe.
   Mitglieder visuell auf ihrer Höhen­ebene
 - [ ] **Kompatibilitäts-Matrix** als Heatmap zwischen allen Mitgliedern (Sonne/Wasser/pH/Allelopathie)
 
+**Phase 4 — Strukturierte Suche via Wikidata-SPARQL (Experiment)**
+
+- [ ] **SPARQL-Endpoint anbinden** — `https://query.wikidata.org/sparql` direkt aus dem Browser
+  (CORS erlaubt). Beispiel-Query: alle Pflanzen mit Eigenschaft „Stickstoff-fixierend"
+  (Wikidata-Property `P3094` oder über Infer-Path via Familie Fabaceae).
+- [ ] **Property-Mapping** — welche Wikidata-Properties decken unsere Felder ab? (Höhe = `P2048`,
+  Klimazone = ?, Ökosystem-Funktionen oft fehlend). Ein systematisches Mapping aufbauen, Lücken
+  dokumentieren.
+- [ ] **Filter-Builder im Vorschlags-Panel** — „finde Pflanze mit Sonne=voll, Wasser=trocken,
+  Rolle=Bodendecker" → SPARQL generieren, Ergebnisse mit Bestand abgleichen, Importieren.
+- **Risiko:** Wikidata-Coverage für ökologische Properties ist dünn; viele wichtige Eigenschaften
+  (Allelopathie, Companion-Verträglichkeit) sind nicht modelliert. Nur sinnvoll als Ergänzung,
+  nicht als Ersatz für die kuratierten `companions.json` aus Phase 2.
+
 ### Visuelles Layout
 - [ ] Pflanzplan-Ansicht: Bäume/Sträucher als Kreise auf einem 2D-Raster platzieren
 - [ ] Maßstabstreue Darstellung (z.B. 1 m = 10 px), Export als SVG/PNG

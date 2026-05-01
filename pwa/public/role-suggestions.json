@@ -1,0 +1,64 @@
+{
+  "_comment": "Kuratierte Pflanzen pro Gilden-Rolle. Werden im /gilden-Vorschlags-Panel als 'noch nicht im Bestand' angezeigt; Klick triggert Wikidata+PFAF+NaturaDB-Import. Erweiterungen via PR willkommen — Quellen: Crawford, Jacke & Toensmeier, Hemenway.",
+
+  "groundCover": [
+    { "latin": "Vinca minor", "common": "Kleines Immergrün" },
+    { "latin": "Symphytum grandiflorum", "common": "Kaukasus-Beinwell" },
+    { "latin": "Glechoma hederacea", "common": "Gundermann" },
+    { "latin": "Fragaria vesca", "common": "Walderdbeere" },
+    { "latin": "Galium odoratum", "common": "Waldmeister" },
+    { "latin": "Ajuga reptans", "common": "Kriechender Günsel" }
+  ],
+
+  "nFixer": [
+    { "latin": "Trifolium repens", "common": "Weißklee" },
+    { "latin": "Trifolium pratense", "common": "Rotklee" },
+    { "latin": "Lupinus polyphyllus", "common": "Vielblättrige Lupine" },
+    { "latin": "Robinia pseudoacacia", "common": "Robinie" },
+    { "latin": "Elaeagnus umbellata", "common": "Korallen-Ölweide" },
+    { "latin": "Hippophae rhamnoides", "common": "Sanddorn" },
+    { "latin": "Cytisus scoparius", "common": "Besenginster" },
+    { "latin": "Medicago sativa", "common": "Luzerne" }
+  ],
+
+  "mineralFixer": [
+    { "latin": "Symphytum officinale", "common": "Beinwell" },
+    { "latin": "Taraxacum officinale", "common": "Löwenzahn" },
+    { "latin": "Urtica dioica", "common": "Brennnessel" },
+    { "latin": "Cichorium intybus", "common": "Wegwarte" },
+    { "latin": "Rumex acetosa", "common": "Sauerampfer" },
+    { "latin": "Armoracia rusticana", "common": "Meerrettich" }
+  ],
+
+  "insectary": [
+    { "latin": "Borago officinalis", "common": "Borretsch" },
+    { "latin": "Phacelia tanacetifolia", "common": "Bienenfreund" },
+    { "latin": "Calendula officinalis", "common": "Ringelblume" },
+    { "latin": "Echinacea purpurea", "common": "Roter Sonnenhut" },
+    { "latin": "Achillea millefolium", "common": "Schafgarbe" },
+    { "latin": "Lavandula angustifolia", "common": "Echter Lavendel" },
+    { "latin": "Origanum vulgare", "common": "Wilder Majoran" }
+  ],
+
+  "pestConfuser": [
+    { "latin": "Tagetes patula", "common": "Studentenblume" },
+    { "latin": "Allium schoenoprasum", "common": "Schnittlauch" },
+    { "latin": "Tropaeolum majus", "common": "Kapuzinerkresse" },
+    { "latin": "Mentha piperita", "common": "Pfefferminze" },
+    { "latin": "Artemisia absinthium", "common": "Wermut" },
+    { "latin": "Tanacetum vulgare", "common": "Rainfarn" }
+  ],
+
+  "fruitProducer": [
+    { "latin": "Rubus idaeus", "common": "Himbeere" },
+    { "latin": "Ribes rubrum", "common": "Rote Johannisbeere" },
+    { "latin": "Ribes nigrum", "common": "Schwarze Johannisbeere" },
+    { "latin": "Ribes uva-crispa", "common": "Stachelbeere" },
+    { "latin": "Vaccinium corymbosum", "common": "Heidelbeere" },
+    { "latin": "Aronia melanocarpa", "common": "Schwarze Apfelbeere" },
+    { "latin": "Sambucus nigra", "common": "Schwarzer Holunder" }
+  ],
+
+  "companion": [],
+  "other": []
+}
