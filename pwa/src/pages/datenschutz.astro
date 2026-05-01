@@ -25,11 +25,19 @@ import Layout from '../layouts/Layout.astro';
       <h2 class="text-xl font-semibold">Lokal gespeicherte Daten</h2>
       <p>Folgende Daten werden ausschließlich lokal in deinem Browser gespeichert und verlassen dein Gerät nicht:</p>
       <ul class="list-disc pl-6">
-        <li><strong>Pflanzen­datenbank</strong> (IndexedDB <code>permaculture-guilds</code>): die von dir
-          erfassten oder importierten Pflanzen­datensätze inklusive Eigenschaften, Quellen und Bild-URLs.</li>
-        <li><strong>Einstellungen</strong> (localStorage): aktivierte Daten­quellen, Theme-Präferenz
-          (Hell/Dunkel) und Hinweise, die du weggeklickt hast.</li>
-        <li><strong>Service-Worker-Cache</strong>: statische Anwendungs­dateien für die Offline-Nutzung.</li>
+        <li><strong>Pflanzen­datenbank und Gilden</strong> (IndexedDB <code>permaculture-guilds</code>):
+          die von dir erfassten oder importierten Pflanzen­datensätze inklusive Eigenschaften,
+          Quellen und Bild-URLs sowie deine angelegten Gilden.</li>
+        <li><strong>Einstellungen, Filter und Hinweise</strong> (localStorage): aktivierte Daten­quellen,
+          Theme-Präferenz (Hell/Dunkel/Auto), Standard-Ansicht, lokale Pflanzen-Filter,
+          Hinweise die du weggeklickt hast, Zeitstempel des letzten Backups.</li>
+        <li><strong>WebDAV-Zugangsdaten</strong> (localStorage, optional): falls du in den Einstellungen
+          eine WebDAV-Sync-Adresse eingetragen hast, werden URL, Benutzername und Passwort
+          ausschließlich in deinem Browser gespeichert. Sie verlassen dein Gerät nur, wenn du
+          eine Sync-Aktion auslöst — und dann ausschließlich an die von dir angegebene Adresse.</li>
+        <li><strong>Service-Worker-Cache</strong>: statische Anwendungs­dateien für die Offline-Nutzung.
+          Die App fragt den Browser außerdem über <code>navigator.storage.persist()</code> an,
+          die lokalen Daten bei Speicherdruck nicht zu verwerfen.</li>
       </ul>
       <p>Du kannst diese Daten jederzeit über die Browser-Einstellungen oder über die Export- und Lösch­funktionen
         innerhalb der App entfernen.</p>

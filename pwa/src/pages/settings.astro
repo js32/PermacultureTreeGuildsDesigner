@@ -80,14 +80,50 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </dl>
 
+    <p id="last-backup-info" class="mt-3 text-xs text-stone-500 dark:text-stone-400"></p>
+
     <div class="mt-4 flex flex-wrap gap-2">
       <button id="btn-backup" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Backup herunterladen (JSON)</button>
+      <button id="btn-share-backup" hidden class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Backup teilen…</button>
       <label class="cursor-pointer rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">
         Backup einlesen…
         <input type="file" id="restore-input" accept=".json,application/json" class="hidden" />
       </label>
       <button id="btn-reload-master" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Golden Master neu laden</button>
     </div>
+
+    <!-- WebDAV-Sync (z.B. eigene Nextcloud) — keine Cloud-Pflicht, optional -->
+    <details class="mt-6 rounded-lg border border-stone-200 dark:border-stone-700 p-4">
+      <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200">WebDAV-Sync (optional, z.B. Nextcloud)</summary>
+      <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
+        Pusht/zieht das JSON-Backup direkt in deinen WebDAV-Speicher. Zugangsdaten bleiben
+        im Browser (<code>localStorage</code>), werden nicht übertragen außer ans angegebene Ziel.
+        Dein Server muss <strong>CORS</strong> für die Domain dieser App erlauben — bei Nextcloud
+        z.B. via <code>occ config:system:set cors.allowed-domains</code>.
+      </p>
+      <div class="mt-3 grid gap-3 sm:grid-cols-2">
+        <label class="block text-xs sm:col-span-2">
+          <span class="font-medium text-stone-500 dark:text-stone-400">Ziel-URL (vollständige Datei-URL)</span>
+          <input id="webdav-url" type="url" placeholder="https://cloud.example.com/remote.php/dav/files/USER/permaguild-backup.json" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
+        </label>
+        <label class="block text-xs">
+          <span class="font-medium text-stone-500 dark:text-stone-400">Benutzername</span>
+          <input id="webdav-user" type="text" autocomplete="off" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+        </label>
+        <label class="block text-xs">
+          <span class="font-medium text-stone-500 dark:text-stone-400">Passwort / App-Token</span>
+          <input id="webdav-pass" type="password" autocomplete="off" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+        </label>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <button id="btn-webdav-save-creds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Zugang merken</button>
+        <button id="btn-webdav-clear-creds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Zugang vergessen</button>
+        <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
+        <button id="btn-webdav-push" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">Backup hochladen ↑</button>
+        <button id="btn-webdav-pull" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Backup abrufen ↓</button>
+        <span id="webdav-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
+      </div>
+    </details>
 
     <div class="mt-6 rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
       <h3 class="text-sm font-semibold text-red-800 dark:text-red-200">Danger Zone</h3>
@@ -215,7 +251,7 @@ import Layout from '../layouts/Layout.astro';
   });
 
   // ── Daten: Backup ───────────────────────────────────────────────────────
-  document.getElementById('btn-backup')!.addEventListener('click', async () => {
+  async function buildBackupBlob(): Promise<{ blob: Blob; filename: string }> {
     const plants = await getAllPlants();
     const payload = {
       version: 1,
@@ -224,13 +260,151 @@ import Layout from '../layouts/Layout.astro';
       plants,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const filename = `perma-guild-forge-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    return { blob, filename };
+  }
+
+  function rememberBackupTaken() {
+    try { localStorage.setItem('last-backup-at', new Date().toISOString()); } catch {}
+    renderLastBackup();
+  }
+  function renderLastBackup() {
+    const el = document.getElementById('last-backup-info');
+    if (!el) return;
+    let last: string | null = null;
+    try { last = localStorage.getItem('last-backup-at'); } catch {}
+    el.textContent = last
+      ? `Letztes Backup: ${new Date(last).toLocaleString('de-DE')}`
+      : 'Noch kein Backup angelegt.';
+  }
+
+  function downloadBackupBlob(blob: Blob, filename: string) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `perma-guild-forge-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.href = url; a.download = filename;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+
+  document.getElementById('btn-backup')!.addEventListener('click', async () => {
+    const { blob, filename } = await buildBackupBlob();
+    downloadBackupBlob(blob, filename);
+    rememberBackupTaken();
   });
+
+  // (c) Web Share API — nur einblenden wenn vom Browser unterstützt.
+  const shareBtn = document.getElementById('btn-share-backup') as HTMLButtonElement | null;
+  if (shareBtn && 'share' in navigator) {
+    shareBtn.hidden = false;
+    shareBtn.addEventListener('click', async () => {
+      const { blob, filename } = await buildBackupBlob();
+      const file = new File([blob], filename, { type: 'application/json' });
+      try {
+        if ((navigator as any).canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'Perma Guild Forge Backup' });
+          rememberBackupTaken();
+        } else {
+          downloadBackupBlob(blob, filename);
+          rememberBackupTaken();
+        }
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') alert(`Teilen fehlgeschlagen: ${err}`);
+      }
+    });
+  }
+
+  // (d) WebDAV-Sync: PUT/GET direkt gegen die User-URL mit Basic Auth.
+  //     Creds bleiben in localStorage. CORS muss am Server erlaubt sein.
+  const webdavUrl = document.getElementById('webdav-url') as HTMLInputElement;
+  const webdavUser = document.getElementById('webdav-user') as HTMLInputElement;
+  const webdavPass = document.getElementById('webdav-pass') as HTMLInputElement;
+  const webdavStatus = document.getElementById('webdav-status')!;
+
+  function loadWebdavCreds() {
+    try {
+      webdavUrl.value = localStorage.getItem('webdav-url') || '';
+      webdavUser.value = localStorage.getItem('webdav-user') || '';
+      webdavPass.value = localStorage.getItem('webdav-pass') || '';
+    } catch {}
+  }
+  function authHeader(): string {
+    const raw = `${webdavUser.value}:${webdavPass.value}`;
+    return 'Basic ' + btoa(unescape(encodeURIComponent(raw)));
+  }
+  function setWebdavStatus(msg: string, kind: 'ok' | 'err' | 'idle' = 'idle') {
+    webdavStatus.textContent = msg;
+    webdavStatus.className = 'text-xs ' + (
+      kind === 'ok'  ? 'text-green-700 dark:text-green-400' :
+      kind === 'err' ? 'text-red-700 dark:text-red-400'    :
+                       'text-stone-500 dark:text-stone-400');
+  }
+
+  document.getElementById('btn-webdav-save-creds')!.addEventListener('click', () => {
+    try {
+      localStorage.setItem('webdav-url', webdavUrl.value.trim());
+      localStorage.setItem('webdav-user', webdavUser.value);
+      localStorage.setItem('webdav-pass', webdavPass.value);
+      setWebdavStatus('Zugang gemerkt.', 'ok');
+    } catch (err) { setWebdavStatus(`Fehler: ${err}`, 'err'); }
+  });
+  document.getElementById('btn-webdav-clear-creds')!.addEventListener('click', () => {
+    try {
+      localStorage.removeItem('webdav-url');
+      localStorage.removeItem('webdav-user');
+      localStorage.removeItem('webdav-pass');
+      webdavUrl.value = ''; webdavUser.value = ''; webdavPass.value = '';
+      setWebdavStatus('Zugang vergessen.', 'idle');
+    } catch {}
+  });
+
+  document.getElementById('btn-webdav-push')!.addEventListener('click', async () => {
+    if (!webdavUrl.value || !webdavUser.value) { setWebdavStatus('URL und Benutzer fehlen.', 'err'); return; }
+    setWebdavStatus('Lade hoch…');
+    try {
+      const { blob } = await buildBackupBlob();
+      const res = await fetch(webdavUrl.value, {
+        method: 'PUT',
+        headers: { 'Authorization': authHeader(), 'Content-Type': 'application/json' },
+        body: blob,
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      rememberBackupTaken();
+      setWebdavStatus(`Hochgeladen (${res.status}).`, 'ok');
+    } catch (err) {
+      const msg = (err as Error).message;
+      setWebdavStatus(`Fehler: ${msg}. Prüfe URL, Zugangsdaten und CORS am Server.`, 'err');
+    }
+  });
+
+  document.getElementById('btn-webdav-pull')!.addEventListener('click', async () => {
+    if (!webdavUrl.value || !webdavUser.value) { setWebdavStatus('URL und Benutzer fehlen.', 'err'); return; }
+    if (!confirm('Backup vom Server abrufen und lokale Pflanzen + Settings überschreiben?')) return;
+    setWebdavStatus('Lade herunter…');
+    try {
+      const res = await fetch(webdavUrl.value, {
+        method: 'GET',
+        headers: { 'Authorization': authHeader() },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      const data = await res.json();
+      const restoredPlants = Array.isArray(data) ? data : (data.plants ?? []);
+      if (!Array.isArray(restoredPlants)) throw new Error('Ungültiges Backup-Format');
+      await importPlants(restoredPlants);
+      if (!Array.isArray(data) && data.settings) {
+        saveSettings(data.settings);
+        settings = loadSettings();
+        renderSources(); renderPrefs();
+      }
+      await renderStats();
+      setWebdavStatus(`${restoredPlants.length} Pflanzen wiederhergestellt.`, 'ok');
+    } catch (err) {
+      const msg = (err as Error).message;
+      setWebdavStatus(`Fehler: ${msg}. Prüfe URL, Zugangsdaten und CORS.`, 'err');
+    }
+  });
+
+  loadWebdavCreds();
+  renderLastBackup();
 
   // ── Daten: Backup einlesen ──────────────────────────────────────────────
   (document.getElementById('restore-input') as HTMLInputElement | null)?.addEventListener('change', async (e) => {
