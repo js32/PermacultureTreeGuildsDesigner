@@ -31,10 +31,11 @@ import Layout from '../layouts/Layout.astro';
         <li><strong>Einstellungen, Filter und Hinweise</strong> (localStorage): aktivierte Daten­quellen,
           Theme-Präferenz (Hell/Dunkel/Auto), Standard-Ansicht, lokale Pflanzen-Filter,
           Hinweise die du weggeklickt hast, Zeitstempel des letzten Backups.</li>
-        <li><strong>WebDAV-Zugangsdaten</strong> (localStorage, optional): falls du in den Einstellungen
-          eine WebDAV-Sync-Adresse eingetragen hast, werden URL, Benutzername und Passwort
-          ausschließlich in deinem Browser gespeichert. Sie verlassen dein Gerät nur, wenn du
-          eine Sync-Aktion auslöst — und dann ausschließlich an die von dir angegebene Adresse.</li>
+        <li><strong>Sync-Zugangsdaten</strong> (localStorage, optional): falls du in den Einstellungen
+          WebDAV- oder GitHub-Gist-Sync eingerichtet hast, werden URL, Benutzername, Passwort
+          bzw. Personal Access Token ausschließlich in deinem Browser gespeichert. Sie verlassen
+          dein Gerät nur, wenn du eine Sync-Aktion auslöst — und dann ausschließlich an die von
+          dir angegebene Adresse (dein WebDAV-Server bzw. <code>api.github.com</code>).</li>
         <li><strong>Service-Worker-Cache</strong>: statische Anwendungs­dateien für die Offline-Nutzung.
           Die App fragt den Browser außerdem über <code>navigator.storage.persist()</code> an,
           die lokalen Daten bei Speicherdruck nicht zu verwerfen.</li>
@@ -55,6 +56,9 @@ import Layout from '../layouts/Layout.astro';
           Anfragen werden über eine Netlify Serverless Function (<code>/api/plant-proxy</code>) als CORS-Proxy
           weitergeleitet, weil die Quellen keinen direkten Browser-Zugriff erlauben.</li>
         <li><strong>Wikimedia Commons</strong> — Pflanzen­bilder werden bei Bedarf direkt von dort geladen.</li>
+        <li><strong>GitHub API</strong> (<a class="text-green-700 dark:text-green-400 hover:underline" href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener">Privacy Statement</a>) —
+          nur wenn du Gist-Sync aktiviert hast. Anfragen gehen mit deinem Personal Access Token
+          direkt an <code>api.github.com</code>.</li>
       </ul>
       <p>Bei diesen Anfragen wird deine IP-Adresse vom jeweiligen Anbieter verarbeitet. Wir haben darauf keinen Einfluss.</p>
     </section>

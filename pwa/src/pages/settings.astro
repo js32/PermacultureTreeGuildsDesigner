@@ -93,7 +93,7 @@ import Layout from '../layouts/Layout.astro';
     </div>
 
     <!-- WebDAV-Sync (z.B. eigene Nextcloud) — keine Cloud-Pflicht, optional -->
-    <details class="mt-6 rounded-lg border border-stone-200 dark:border-stone-700 p-4">
+    <details class="mt-4 rounded-lg border border-stone-200 dark:border-stone-700 p-4">
       <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200">WebDAV-Sync (optional, z.B. Nextcloud)</summary>
       <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
         Pusht/zieht das JSON-Backup direkt in deinen WebDAV-Speicher. Zugangsdaten bleiben
@@ -122,6 +122,50 @@ import Layout from '../layouts/Layout.astro';
         <button id="btn-webdav-push" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">Backup hochladen ↑</button>
         <button id="btn-webdav-pull" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Backup abrufen ↓</button>
         <span id="webdav-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
+      </div>
+    </details>
+
+    <!-- Lokale Datei-Sync (File System Access API, nur Chromium) -->
+    <details id="details-fsa" class="mt-4 rounded-lg border border-stone-200 dark:border-stone-700 p-4" hidden>
+      <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200">Lokale Datei-Sync (Chrome / Edge)</summary>
+      <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
+        Schreibt das Backup direkt in eine Datei auf deinem Gerät oder liest es von dort.
+        Die Datei kannst du z.&nbsp;B. in einem Cloud-Ordner ablegen (iCloud Drive, Dropbox,
+        Google Drive Offline-Ordner). Nur in Chromium-basierten Browsern verfügbar.
+      </p>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <button id="btn-fsa-write" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">In Datei speichern ↑</button>
+        <button id="btn-fsa-read" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Aus Datei laden ↓</button>
+        <span id="fsa-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
+      </div>
+    </details>
+
+    <!-- GitHub Gist Sync — geräteübergreifend ohne eigenen Server -->
+    <details class="mt-4 rounded-lg border border-stone-200 dark:border-stone-700 p-4">
+      <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200">GitHub Gist Sync (geräteübergreifend)</summary>
+      <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
+        Speichert das Backup als privates GitHub Gist. Du brauchst einen GitHub-Account und ein
+        <a href="https://github.com/settings/tokens/new?scopes=gist&description=Perma+Guild+Forge" target="_blank" rel="noopener" class="text-green-700 dark:text-green-400 hover:underline">Personal Access Token</a>
+        mit dem Scope <code>gist</code>. Beim ersten Hochladen wird ein neues Gist angelegt
+        und die ID automatisch gespeichert — danach einfach wieder drücken.
+      </p>
+      <div class="mt-3 grid gap-3 sm:grid-cols-2">
+        <label class="block text-xs">
+          <span class="font-medium text-stone-500 dark:text-stone-400">GitHub Token (PAT)</span>
+          <input id="gist-token" type="password" autocomplete="off" placeholder="ghp_…" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
+        </label>
+        <label class="block text-xs">
+          <span class="font-medium text-stone-500 dark:text-stone-400">Gist-ID (leer = wird beim ersten Upload gesetzt)</span>
+          <input id="gist-id" type="text" autocomplete="off" placeholder="automatisch gesetzt" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
+        </label>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <button id="btn-gist-save-creds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Token merken</button>
+        <button id="btn-gist-clear-creds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Token vergessen</button>
+        <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
+        <button id="btn-gist-push" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">Zu Gist hochladen ↑</button>
+        <button id="btn-gist-pull" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Von Gist abrufen ↓</button>
+        <span id="gist-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
       </div>
     </details>
 
@@ -462,6 +506,171 @@ import Layout from '../layouts/Layout.astro';
     try { localStorage.clear(); } catch {}
     location.href = '/';
   });
+
+  // ── File System Access API ──────────────────────────────────────────────
+  const fsaDetails = document.getElementById('details-fsa') as HTMLDetailsElement | null;
+  const fsaStatus = document.getElementById('fsa-status')!;
+
+  function setFsaStatus(msg: string, kind: 'ok' | 'err' | 'idle' = 'idle') {
+    fsaStatus.textContent = msg;
+    fsaStatus.className = 'text-xs ' + (
+      kind === 'ok'  ? 'text-green-700 dark:text-green-400' :
+      kind === 'err' ? 'text-red-700 dark:text-red-400'    :
+                       'text-stone-500 dark:text-stone-400');
+  }
+
+  if (fsaDetails && 'showSaveFilePicker' in window) {
+    fsaDetails.hidden = false;
+
+    document.getElementById('btn-fsa-write')!.addEventListener('click', async () => {
+      try {
+        const { blob, filename } = await buildBackupBlob();
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: filename,
+          types: [{ description: 'JSON-Backup', accept: { 'application/json': ['.json'] } }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        rememberBackupTaken();
+        setFsaStatus('Gespeichert.', 'ok');
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') setFsaStatus(`Fehler: ${err}`, 'err');
+      }
+    });
+
+    document.getElementById('btn-fsa-read')!.addEventListener('click', async () => {
+      try {
+        const [handle] = await (window as any).showOpenFilePicker({
+          types: [{ description: 'JSON-Backup', accept: { 'application/json': ['.json'] } }],
+          multiple: false,
+        });
+        const file = await handle.getFile();
+        const text = await (file as File).text();
+        const data = JSON.parse(text);
+        const plants = Array.isArray(data) ? data : (data.plants ?? []);
+        if (!Array.isArray(plants)) throw new Error('Ungültiges Format');
+        if (!confirm(`${plants.length} Pflanzen aus Datei einlesen und bestehende überschreiben?`)) return;
+        await importPlants(plants);
+        if (!Array.isArray(data) && data.settings) {
+          saveSettings(data.settings);
+          settings = loadSettings();
+          renderSources(); renderPrefs();
+        }
+        await renderStats();
+        setFsaStatus(`${plants.length} Pflanzen wiederhergestellt.`, 'ok');
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') setFsaStatus(`Fehler: ${err}`, 'err');
+      }
+    });
+  }
+
+  // ── GitHub Gist Sync ─────────────────────────────────────────────────────
+  const gistTokenInput = document.getElementById('gist-token') as HTMLInputElement;
+  const gistIdInput = document.getElementById('gist-id') as HTMLInputElement;
+  const gistStatus = document.getElementById('gist-status')!;
+  const GIST_FILENAME = 'perma-guild-forge-backup.json';
+
+  function setGistStatus(msg: string, kind: 'ok' | 'err' | 'idle' = 'idle') {
+    gistStatus.textContent = msg;
+    gistStatus.className = 'text-xs ' + (
+      kind === 'ok'  ? 'text-green-700 dark:text-green-400' :
+      kind === 'err' ? 'text-red-700 dark:text-red-400'    :
+                       'text-stone-500 dark:text-stone-400');
+  }
+
+  function loadGistCreds() {
+    try {
+      gistTokenInput.value = localStorage.getItem('gist-token') || '';
+      gistIdInput.value = localStorage.getItem('gist-id') || '';
+    } catch {}
+  }
+
+  document.getElementById('btn-gist-save-creds')!.addEventListener('click', () => {
+    try {
+      localStorage.setItem('gist-token', gistTokenInput.value.trim());
+      localStorage.setItem('gist-id', gistIdInput.value.trim());
+      setGistStatus('Token gemerkt.', 'ok');
+    } catch (err) { setGistStatus(`Fehler: ${err}`, 'err'); }
+  });
+
+  document.getElementById('btn-gist-clear-creds')!.addEventListener('click', () => {
+    try {
+      localStorage.removeItem('gist-token');
+      localStorage.removeItem('gist-id');
+      gistTokenInput.value = ''; gistIdInput.value = '';
+      setGistStatus('Token vergessen.', 'idle');
+    } catch {}
+  });
+
+  document.getElementById('btn-gist-push')!.addEventListener('click', async () => {
+    const token = gistTokenInput.value.trim();
+    if (!token) { setGistStatus('Token fehlt.', 'err'); return; }
+    setGistStatus('Lade hoch…');
+    try {
+      const { blob } = await buildBackupBlob();
+      const content = await blob.text();
+      const id = gistIdInput.value.trim();
+      const res = await fetch(id ? `https://api.github.com/gists/${id}` : 'https://api.github.com/gists', {
+        method: id ? 'PATCH' : 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+        body: JSON.stringify({
+          description: 'Perma Guild Forge Backup',
+          public: false,
+          files: { [GIST_FILENAME]: { content } },
+        }),
+      });
+      if (!res.ok) throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
+      const result = await res.json();
+      if (!id) {
+        gistIdInput.value = result.id;
+        try { localStorage.setItem('gist-id', result.id); } catch {}
+      }
+      rememberBackupTaken();
+      setGistStatus(`Hochgeladen — Gist ${String(result.id).slice(0, 8)}…`, 'ok');
+    } catch (err) {
+      setGistStatus(`Fehler: ${(err as Error).message}`, 'err');
+    }
+  });
+
+  document.getElementById('btn-gist-pull')!.addEventListener('click', async () => {
+    const token = gistTokenInput.value.trim();
+    const id = gistIdInput.value.trim();
+    if (!token || !id) { setGistStatus('Token und Gist-ID fehlen.', 'err'); return; }
+    if (!confirm('Backup von GitHub Gist abrufen und lokale Daten überschreiben?')) return;
+    setGistStatus('Lade herunter…');
+    try {
+      const res = await fetch(`https://api.github.com/gists/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      });
+      if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+      const gist = await res.json();
+      const raw: string | undefined = gist.files?.[GIST_FILENAME]?.content;
+      if (!raw) throw new Error(`Datei "${GIST_FILENAME}" nicht im Gist gefunden`);
+      const data = JSON.parse(raw);
+      const plants = Array.isArray(data) ? data : (data.plants ?? []);
+      if (!Array.isArray(plants)) throw new Error('Ungültiges Backup-Format');
+      await importPlants(plants);
+      if (!Array.isArray(data) && data.settings) {
+        saveSettings(data.settings);
+        settings = loadSettings();
+        renderSources(); renderPrefs();
+      }
+      await renderStats();
+      setGistStatus(`${plants.length} Pflanzen wiederhergestellt.`, 'ok');
+    } catch (err) {
+      setGistStatus(`Fehler: ${(err as Error).message}`, 'err');
+    }
+  });
+
+  loadGistCreds();
 
   // ── Init ────────────────────────────────────────────────────────────────
   settings = loadSettings();
