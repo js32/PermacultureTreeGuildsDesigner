@@ -17,21 +17,32 @@ import Layout from '../layouts/Layout.astro';
     <div id="search-results" class="absolute left-0 right-0 top-full z-50 mt-1 hidden max-h-80 overflow-y-auto rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 shadow-xl"></div>
   </section>
 
-  <!-- Actions -->
+  <!-- Actions: View-Switch links, Heading mittig, Primär-CTA + Daten-Overflow rechts -->
   <div class="mb-2 flex flex-wrap items-center justify-between gap-3">
-    <h1 class="text-xl font-bold text-stone-800 dark:text-stone-100">Pflanzenkacheln</h1>
-    <div class="flex flex-wrap gap-2">
-      <button id="btn-add" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Pflanze</button>
-      <button id="btn-import" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Import JSON</button>
-      <button id="btn-import-csv" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Import CSV</button>
-      <button id="btn-csv-template" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Leere CSV-Vorlage herunterladen">CSV-Vorlage ↓</button>
-      <button id="btn-export" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Export</button>
-      <button id="btn-load-samples" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Beispieldaten</button>
+    <div class="flex items-center gap-3">
       <div class="flex overflow-hidden rounded-lg ring-1 ring-stone-200 dark:ring-stone-700">
         <button id="btn-view-grid" class="bg-green-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-green-800" title="Kachelansicht">⊞</button>
         <button id="btn-view-list" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Listenansicht">☰</button>
         <button id="btn-view-cards" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Kartenansicht">▤</button>
       </div>
+      <h1 class="text-xl font-bold text-stone-800 dark:text-stone-100">Pflanzenkacheln</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="btn-add" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Pflanze</button>
+      <details id="data-menu" class="relative">
+        <summary class="cursor-pointer list-none rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Daten importieren / exportieren">
+          Daten ⋮
+        </summary>
+        <div class="absolute right-0 top-full z-40 mt-1 min-w-56 rounded-lg bg-white dark:bg-stone-800 p-1 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
+          <button id="btn-import" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Import JSON</button>
+          <button id="btn-import-csv" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Import CSV</button>
+          <button id="btn-csv-template" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">CSV-Vorlage ↓</button>
+          <hr class="my-1 border-stone-200 dark:border-stone-700">
+          <button id="btn-export" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Alle exportieren (JSON)</button>
+          <hr class="my-1 border-stone-200 dark:border-stone-700">
+          <button id="btn-load-samples" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden</button>
+        </div>
+      </details>
     </div>
   </div>
   <!-- Cards toolbar (own row, no layout shift in button bar) -->
@@ -1212,6 +1223,16 @@ import Layout from '../layouts/Layout.astro';
     if (e.key === 'g') { e.preventDefault(); document.getElementById('btn-view-grid')!.click(); return; }
     if (e.key === 'l') { e.preventDefault(); document.getElementById('btn-view-list')!.click(); return; }
     if (e.key === 'c') { e.preventDefault(); document.getElementById('btn-view-cards')!.click(); return; }
+  });
+
+  // ── Daten-Overflow-Menü: schließt beim Item-Klick + Klick-außerhalb ─────
+  const dataMenu = document.getElementById('data-menu') as HTMLDetailsElement | null;
+  dataMenu?.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    if (t.tagName === 'BUTTON' && t.id !== 'data-menu') dataMenu.open = false;
+  });
+  document.addEventListener('click', (e) => {
+    if (dataMenu?.open && !dataMenu.contains(e.target as Node)) dataMenu.open = false;
   });
 
   updateViewButtons();
