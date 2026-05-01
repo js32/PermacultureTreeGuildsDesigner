@@ -1,5 +1,5 @@
 import { openDB, type DBSchema } from 'idb';
-import type { PlantData } from './types';
+import type { PlantData, Guild } from './types';
 
 interface PlantDB extends DBSchema {
   plants: {
@@ -7,16 +7,28 @@ interface PlantDB extends DBSchema {
     value: PlantData;
     indexes: { 'by-latin': string };
   };
+  guilds: {
+    key: string;
+    value: Guild;
+  };
 }
 
 const DB_NAME = 'permaculture-guilds';
-const DB_VERSION = 1;
+// v2: added 'guilds' store. Migration is non-destructive — existing 'plants'
+// data carries over because we only call createObjectStore for stores that
+// don't yet exist.
+const DB_VERSION = 2;
 
 function getDB() {
   return openDB<PlantDB>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      const store = db.createObjectStore('plants', { keyPath: 'id' });
-      store.createIndex('by-latin', 'latinName');
+    upgrade(db, oldVersion) {
+      if (oldVersion < 1) {
+        const store = db.createObjectStore('plants', { keyPath: 'id' });
+        store.createIndex('by-latin', 'latinName');
+      }
+      if (oldVersion < 2) {
+        db.createObjectStore('guilds', { keyPath: 'id' });
+      }
     },
   });
 }
@@ -57,4 +69,27 @@ export async function exportPlants(): Promise<PlantData[]> {
 export async function clearAllPlants(): Promise<void> {
   const db = await getDB();
   await db.clear('plants');
+}
+
+// ── Guilds ────────────────────────────────────────────────────────────────
+
+export async function getAllGuilds(): Promise<Guild[]> {
+  const db = await getDB();
+  return db.getAll('guilds');
+}
+
+export async function getGuild(id: string): Promise<Guild | undefined> {
+  const db = await getDB();
+  return db.get('guilds', id);
+}
+
+export async function saveGuild(guild: Guild): Promise<void> {
+  guild.updatedAt = new Date().toISOString();
+  const db = await getDB();
+  await db.put('guilds', guild);
+}
+
+export async function deleteGuild(id: string): Promise<void> {
+  const db = await getDB();
+  await db.delete('guilds', id);
 }

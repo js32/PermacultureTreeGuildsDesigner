@@ -1,3 +1,72 @@
+// ── Guilds ──────────────────────────────────────────────────────────────────
+
+export type GuildRole =
+  | 'companion'      // allgemeiner Begleiter
+  | 'groundCover'    // Bodendecker
+  | 'nFixer'         // Stickstoff-Fixierer
+  | 'mineralFixer'   // Mineralien-Sammler / Tiefwurzler
+  | 'insectary'      // Insektenpflanze (Bestäuber, Nützlinge)
+  | 'pestConfuser'   // Schädlings-Konfusor (Duft / Abwehr)
+  | 'fruitProducer'  // Obst-/Beerenträger neben dem Anker
+  | 'other';
+
+export const ROLE_LABEL: Record<GuildRole, string> = {
+  companion:     'Begleiter',
+  groundCover:   'Bodendecker',
+  nFixer:        'Stickstoff-Fixierer',
+  mineralFixer:  'Mineraliensammler',
+  insectary:     'Insektenpflanze',
+  pestConfuser:  'Duftverwirrer',
+  fruitProducer: 'Obst/Beere',
+  other:         'Sonstiges',
+};
+
+// Welche PlantData-Boolean-Felder eine Pflanze qualifizieren, eine Rolle zu füllen.
+// Verwendet im mechanischen Vorschlags-Filter.
+export const ROLE_REQUIREMENT: Record<GuildRole, (keyof PlantData)[]> = {
+  companion:     [],
+  groundCover:   ['groundCover'],
+  nFixer:        ['nitrogenFix'],
+  mineralFixer:  ['mineralFix'],
+  insectary:     ['insects'],
+  pestConfuser:  ['pest'],
+  fruitProducer: ['eatable'],
+  other:         [],
+};
+
+export interface GuildMember {
+  plantId: string;
+  role: GuildRole;
+  notes: string;
+}
+
+export interface Guild {
+  id: string;
+  name: string;
+  description: string;
+  anchorPlantId: string | null;
+  members: GuildMember[];
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function createEmptyGuild(): Guild {
+  const now = new Date().toISOString();
+  return {
+    id: crypto.randomUUID(),
+    name: '',
+    description: '',
+    anchorPlantId: null,
+    members: [],
+    notes: '',
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+// ── Data sources ────────────────────────────────────────────────────────────
+
 export type DataSource = 'wikidata' | 'pfaf' | 'naturadb' | 'manual' | 'csv' | 'sample';
 
 export const SOURCE_LABEL: Record<DataSource, string> = {

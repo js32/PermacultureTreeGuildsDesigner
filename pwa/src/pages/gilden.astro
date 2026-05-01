@@ -1,0 +1,319 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Perma Guild Forge — Gilden">
+  <!-- ── Listenansicht ─────────────────────────────────────────────────── -->
+  <section id="guild-list-view">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100">Gilden</h1>
+      <button id="btn-new-guild" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Gilde</button>
+    </div>
+    <p class="mb-4 text-sm text-stone-500 dark:text-stone-400">
+      Eine Gilde ist eine benannte Gruppe von Pflanzen rund um eine Ankerart, die sich
+      gegenseitig fördert.  Mehr in der <a href="/hilfe#gilden" class="text-green-700 dark:text-green-400 hover:underline">Hilfe</a>.
+    </p>
+    <div id="guild-list" class="grid gap-4 sm:grid-cols-2"></div>
+    <div id="guild-empty" class="hidden rounded-xl border-2 border-dashed border-stone-300 dark:border-stone-600 py-16 text-center">
+      <p class="text-stone-500 dark:text-stone-400">Noch keine Gilden angelegt.</p>
+      <button id="btn-empty-new" class="mt-3 inline-block rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">Erste Gilde anlegen</button>
+    </div>
+  </section>
+
+  <!-- ── Editor ────────────────────────────────────────────────────────── -->
+  <section id="guild-editor-view" hidden>
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <button id="btn-back-to-list" class="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-green-700 dark:hover:text-green-400">← Zurück zur Liste</button>
+      <div class="flex items-center gap-2">
+        <button id="btn-delete-guild" class="rounded-lg bg-red-100 dark:bg-red-900/40 px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-300 ring-1 ring-red-300 dark:ring-red-800 hover:bg-red-200 dark:hover:bg-red-900/60">Löschen</button>
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-3">
+      <!-- Editor (links, 2 cols) -->
+      <div class="lg:col-span-2 space-y-4">
+        <div class="rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 space-y-3">
+          <label class="block">
+            <span class="text-xs font-medium text-stone-500 dark:text-stone-400">Name</span>
+            <input id="g-name" type="text" placeholder="z.B. Apfelbaum-Gilde Garten Süd" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+          </label>
+          <label class="block">
+            <span class="text-xs font-medium text-stone-500 dark:text-stone-400">Beschreibung</span>
+            <input id="g-description" type="text" placeholder="kurz, was die Gilde zusammenhält" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+          </label>
+          <label class="block">
+            <span class="text-xs font-medium text-stone-500 dark:text-stone-400">Ankerart</span>
+            <select id="g-anchor" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none"></select>
+          </label>
+          <label class="block">
+            <span class="text-xs font-medium text-stone-500 dark:text-stone-400">Notizen</span>
+            <textarea id="g-notes" rows="2" placeholder="Standort, Ziele, Beobachtungen…" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none"></textarea>
+          </label>
+        </div>
+
+        <div class="rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <h2 class="mb-3 text-base font-semibold text-stone-800 dark:text-stone-100">Mitglieder</h2>
+          <div id="member-list" class="space-y-2"></div>
+          <div class="mt-3 text-xs text-stone-500 dark:text-stone-400">Mitglieder aus dem Vorschlags-Panel rechts hinzufügen.</div>
+        </div>
+
+        <button id="btn-save-guild" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Gilde speichern</button>
+      </div>
+
+      <!-- Vorschläge (rechts, 1 col) -->
+      <aside class="rounded-xl bg-stone-50 dark:bg-stone-900 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+        <h2 class="mb-1 text-base font-semibold text-stone-800 dark:text-stone-100">Vorschläge</h2>
+        <p class="mb-3 text-xs text-stone-500 dark:text-stone-400">Pflanzen aus deinem Bestand, die freie Rollen füllen und mit der Ankerart in Sonne/Wasser/pH überlappen.</p>
+        <div id="suggestions"></div>
+      </aside>
+    </div>
+  </section>
+
+  <div id="toast" class="fixed bottom-6 right-6 hidden rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg"></div>
+</Layout>
+
+<script>
+  import { getAllPlants } from '../lib/db';
+  import { getAllGuilds, getGuild, saveGuild, deleteGuild } from '../lib/db';
+  import {
+    createEmptyGuild,
+    ROLE_LABEL, ROLE_REQUIREMENT,
+    type Guild, type GuildMember, type GuildRole, type PlantData,
+  } from '../lib/types';
+
+  const ROLES: GuildRole[] = ['companion','groundCover','nFixer','mineralFixer','insectary','pestConfuser','fruitProducer','other'];
+
+  // ── DOM refs ────────────────────────────────────────────────────────────
+  const listView = document.getElementById('guild-list-view')!;
+  const editorView = document.getElementById('guild-editor-view')!;
+  const listEl = document.getElementById('guild-list')!;
+  const emptyEl = document.getElementById('guild-empty')!;
+  const toast = document.getElementById('toast')!;
+
+  const fName = document.getElementById('g-name') as HTMLInputElement;
+  const fDescription = document.getElementById('g-description') as HTMLInputElement;
+  const fAnchor = document.getElementById('g-anchor') as HTMLSelectElement;
+  const fNotes = document.getElementById('g-notes') as HTMLTextAreaElement;
+  const memberList = document.getElementById('member-list')!;
+  const suggestions = document.getElementById('suggestions')!;
+
+  let plants: PlantData[] = [];
+  let plantsById = new Map<string, PlantData>();
+  let guilds: Guild[] = [];
+  let editing: Guild | null = null;
+
+  function showToast(msg: string) {
+    toast.textContent = msg;
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 2000);
+  }
+
+  function plantLabel(p: PlantData | undefined): string {
+    if (!p) return '— unbekannt —';
+    return p.commonName ? `${p.commonName} (${p.latinName})` : p.latinName || '—';
+  }
+
+  // ── Compatibility scoring ──────────────────────────────────────────────
+  // For a candidate plant, compute Sun/Water/pH overlap with the anchor.
+  // Returns 0..3 (one point per dimension where at least one shared flag).
+  function compatScore(candidate: PlantData, anchor: PlantData): number {
+    const dims: (keyof PlantData)[][] = [
+      ['sunFull','sunMid','sunShadow'],
+      ['waterDry','waterMid','waterWet'],
+      ['phVeryAcid','phAcid','phNeutral','phAlkaline','phVeryAlkaline'],
+    ];
+    let score = 0;
+    for (const dim of dims) {
+      const anchorAny = dim.some(k => Boolean((anchor as any)[k]));
+      const candAny   = dim.some(k => Boolean((candidate as any)[k]));
+      if (!anchorAny || !candAny) { score++; continue; } // unknown ⇒ neutral, don't penalize
+      const overlap = dim.some(k => Boolean((anchor as any)[k]) && Boolean((candidate as any)[k]));
+      if (overlap) score++;
+    }
+    return score;
+  }
+
+  // ── Listenansicht ──────────────────────────────────────────────────────
+  function renderList() {
+    if (guilds.length === 0) {
+      emptyEl.classList.remove('hidden');
+      listEl.classList.add('hidden');
+      return;
+    }
+    emptyEl.classList.add('hidden');
+    listEl.classList.remove('hidden');
+    listEl.innerHTML = guilds.map(g => {
+      const anchor = g.anchorPlantId ? plantsById.get(g.anchorPlantId) : undefined;
+      const filledRoles = new Set(g.members.map(m => m.role));
+      const memberChips = g.members.slice(0, 6).map(m => {
+        const p = plantsById.get(m.plantId);
+        return `<span class="inline-block rounded-full bg-stone-100 dark:bg-stone-700 px-2 py-0.5 text-xs text-stone-700 dark:text-stone-200" title="${ROLE_LABEL[m.role]}">${plantLabel(p)}</span>`;
+      }).join(' ');
+      const more = g.members.length > 6 ? `<span class="text-xs text-stone-400">+${g.members.length - 6}</span>` : '';
+      return `
+        <article data-guild-id="${g.id}" class="cursor-pointer rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-300 dark:hover:ring-green-700">
+          <h3 class="text-base font-semibold text-stone-900 dark:text-stone-100">${g.name || '— ohne Namen —'}</h3>
+          ${g.description ? `<p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">${g.description}</p>` : ''}
+          <p class="mt-2 text-sm text-stone-700 dark:text-stone-200"><span class="text-stone-400 dark:text-stone-500">Anker:</span> ${plantLabel(anchor)}</p>
+          <div class="mt-3 flex flex-wrap items-center gap-1">${memberChips} ${more}</div>
+          <p class="mt-3 text-xs text-stone-400 dark:text-stone-500">${g.members.length} Mitglied${g.members.length === 1 ? '' : 'er'} · ${filledRoles.size} von ${ROLES.length} Rollen besetzt</p>
+        </article>`;
+    }).join('');
+    listEl.querySelectorAll<HTMLElement>('[data-guild-id]').forEach(el => {
+      el.addEventListener('click', () => openEditor(el.dataset.guildId!));
+    });
+  }
+
+  // ── Editor ─────────────────────────────────────────────────────────────
+  function openEditor(id: string | null) {
+    editing = id ? (guilds.find(g => g.id === id) ?? createEmptyGuild()) : createEmptyGuild();
+    fName.value = editing.name;
+    fDescription.value = editing.description;
+    fNotes.value = editing.notes;
+    fAnchor.innerHTML = `<option value="">— bitte wählen —</option>` + plants
+      .map(p => `<option value="${p.id}" ${p.id === editing!.anchorPlantId ? 'selected' : ''}>${plantLabel(p)}</option>`)
+      .join('');
+    renderMembers();
+    renderSuggestions();
+    listView.hidden = true;
+    editorView.hidden = false;
+    window.scrollTo({ top: 0 });
+  }
+
+  function closeEditor() {
+    editing = null;
+    listView.hidden = false;
+    editorView.hidden = true;
+  }
+
+  function renderMembers() {
+    if (!editing) return;
+    if (editing.members.length === 0) {
+      memberList.innerHTML = `<p class="text-xs text-stone-400 dark:text-stone-500">Keine Mitglieder.</p>`;
+      return;
+    }
+    memberList.innerHTML = editing.members.map((m, i) => {
+      const p = plantsById.get(m.plantId);
+      const roleOptions = ROLES.map(r => `<option value="${r}" ${r === m.role ? 'selected' : ''}>${ROLE_LABEL[r]}</option>`).join('');
+      return `
+        <div class="flex items-center gap-2 rounded-md bg-stone-50 dark:bg-stone-900 p-2 ring-1 ring-stone-200 dark:ring-stone-700">
+          <span class="flex-1 text-sm text-stone-800 dark:text-stone-100">${plantLabel(p)}</span>
+          <select data-member-idx="${i}" class="member-role rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1 text-xs">${roleOptions}</select>
+          <button data-remove-idx="${i}" class="rounded-md bg-red-100 dark:bg-red-900/40 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">×</button>
+        </div>`;
+    }).join('');
+    memberList.querySelectorAll<HTMLSelectElement>('.member-role').forEach(sel => {
+      sel.addEventListener('change', () => {
+        const idx = parseInt(sel.dataset.memberIdx!);
+        editing!.members[idx].role = sel.value as GuildRole;
+        renderSuggestions();
+      });
+    });
+    memberList.querySelectorAll<HTMLButtonElement>('[data-remove-idx]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.removeIdx!);
+        editing!.members.splice(idx, 1);
+        renderMembers();
+        renderSuggestions();
+      });
+    });
+  }
+
+  // ── Mechanische Vorschläge ─────────────────────────────────────────────
+  function renderSuggestions() {
+    if (!editing) return;
+    const anchorId = fAnchor.value || editing.anchorPlantId;
+    const anchor = anchorId ? plantsById.get(anchorId) : undefined;
+    if (!anchor) {
+      suggestions.innerHTML = `<p class="text-xs text-stone-400 dark:text-stone-500">Wähle zuerst eine Ankerart, dann werden passende Pflanzen vorgeschlagen.</p>`;
+      return;
+    }
+    const memberIds = new Set([anchorId, ...editing.members.map(m => m.plantId)]);
+    const filledRoles = new Set(editing.members.map(m => m.role));
+    const openRoles = ROLES.filter(r => !filledRoles.has(r) && r !== 'other');
+
+    if (openRoles.length === 0) {
+      suggestions.innerHTML = `<p class="text-xs text-green-700 dark:text-green-400">Alle Rollen besetzt 🎉  Du kannst weiter „Begleiter" hinzufügen, wenn du mehr Vielfalt willst.</p>`;
+      return;
+    }
+
+    const blocks = openRoles.map(role => {
+      const requirements = ROLE_REQUIREMENT[role];
+      const candidates = plants
+        .filter(p => !memberIds.has(p.id))
+        .filter(p => requirements.length === 0 || requirements.every(k => Boolean((p as any)[k])))
+        .map(p => ({ p, score: compatScore(p, anchor) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5);
+
+      if (candidates.length === 0) {
+        return `<details class="mb-2 rounded-md bg-white dark:bg-stone-800 p-2 ring-1 ring-stone-200 dark:ring-stone-700">
+          <summary class="cursor-pointer text-xs font-medium text-stone-500 dark:text-stone-400">${ROLE_LABEL[role]} <span class="text-stone-400">— keine passenden Pflanzen</span></summary>
+        </details>`;
+      }
+      const items = candidates.map(({ p, score }) => `
+        <div class="flex items-center justify-between gap-2 rounded px-2 py-1 text-xs hover:bg-stone-100 dark:hover:bg-stone-700">
+          <span class="min-w-0 flex-1 truncate text-stone-800 dark:text-stone-100" title="${plantLabel(p)}">${plantLabel(p)}</span>
+          <span class="shrink-0 font-mono text-[10px] text-stone-400" title="Sonne/Wasser/pH-Übereinstimmung">${score}/3</span>
+          <button data-add-plant="${p.id}" data-add-role="${role}" class="shrink-0 rounded bg-green-100 dark:bg-green-900/40 px-2 py-0.5 font-medium text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60">+ hinzufügen</button>
+        </div>`).join('');
+      return `
+        <div class="mb-3 rounded-md bg-white dark:bg-stone-800 p-2 ring-1 ring-stone-200 dark:ring-stone-700">
+          <div class="mb-1 px-1 text-xs font-semibold text-stone-700 dark:text-stone-200">${ROLE_LABEL[role]}</div>
+          ${items}
+        </div>`;
+    });
+
+    suggestions.innerHTML = blocks.join('');
+    suggestions.querySelectorAll<HTMLButtonElement>('[data-add-plant]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editing!.members.push({
+          plantId: btn.dataset.addPlant!,
+          role: btn.dataset.addRole as GuildRole,
+          notes: '',
+        });
+        renderMembers();
+        renderSuggestions();
+      });
+    });
+  }
+
+  // ── Init + handlers ────────────────────────────────────────────────────
+  async function init() {
+    plants = await getAllPlants();
+    plantsById = new Map(plants.map(p => [p.id, p]));
+    guilds = await getAllGuilds();
+    renderList();
+  }
+
+  document.getElementById('btn-new-guild')!.addEventListener('click', () => openEditor(null));
+  document.getElementById('btn-empty-new')!.addEventListener('click', () => openEditor(null));
+  document.getElementById('btn-back-to-list')!.addEventListener('click', closeEditor);
+
+  fAnchor.addEventListener('change', () => renderSuggestions());
+
+  document.getElementById('btn-save-guild')!.addEventListener('click', async () => {
+    if (!editing) return;
+    if (!fName.value.trim()) { alert('Bitte einen Namen eingeben.'); return; }
+    editing.name = fName.value.trim();
+    editing.description = fDescription.value.trim();
+    editing.notes = fNotes.value;
+    editing.anchorPlantId = fAnchor.value || null;
+    await saveGuild(editing);
+    guilds = await getAllGuilds();
+    renderList();
+    closeEditor();
+    showToast('Gilde gespeichert');
+  });
+
+  document.getElementById('btn-delete-guild')!.addEventListener('click', async () => {
+    if (!editing) return;
+    if (!confirm(`Gilde „${editing.name || 'ohne Namen'}" wirklich löschen?`)) return;
+    await deleteGuild(editing.id);
+    guilds = await getAllGuilds();
+    renderList();
+    closeEditor();
+    showToast('Gilde gelöscht');
+  });
+
+  init();
+</script>
