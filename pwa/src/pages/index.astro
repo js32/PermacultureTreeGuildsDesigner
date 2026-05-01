@@ -1028,7 +1028,20 @@ import Layout from '../layouts/Layout.astro';
 
   // ── Standard actions ──────────────────────────────────────────────────────────
 
-  document.getElementById('btn-load-samples')!.addEventListener('click', async () => { await importPlants(samplePlants); renderList(); });
+  document.getElementById('btn-load-samples')!.addEventListener('click', async () => {
+    try {
+      await importPlants(samplePlants);
+      // Filter könnten alle Samples ausblenden — Hinweis im Status, falls so.
+      const before = activeFilters.size;
+      activeFilters.clear();
+      persistFilters();
+      await renderList();
+      alert(`${samplePlants.length} Beispielpflanzen importiert${before > 0 ? ' (Filter zurückgesetzt)' : ''}.`);
+    } catch (err) {
+      alert(`Beispieldaten-Import fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
+      console.error(err);
+    }
+  });
   document.getElementById('btn-csv-template')!.addEventListener('click', () => {
     triggerDownload(buildCSVTemplate(), 'pflanzen-vorlage.csv', 'text/csv;charset=utf-8;');
   });
