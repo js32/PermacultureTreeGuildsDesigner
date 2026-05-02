@@ -14,199 +14,129 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - **Suchleiste** — prominent, mit Lupe-Icon, floating Dropdown, Multi-Add, Wikidata/PFAF/NaturaDB-Enrichment direkt beim Import
 - **Kartenvorschau** — Live-Vorschau der Pflanzenkarten im Browser
 - **PDF-Export** — Polykarten und Streifenkarten via pdf-lib (Auto-Download); Baumscheibe via pdf-lib (Chrome/Safari) bzw. nativem Druckdialog (Firefox); Bulk-PDF aus Selektion
-- **Bulk-Operationen** — Auswählen, Löschen, Ergänzen, JSON/CSV/PDF-Export ausgewählter Pflanzen
+- **Bulk-Operationen** — Auswählen (inkl. Shift-Klick Range), Löschen, Ergänzen, JSON/CSV/PDF-Export ausgewählter Pflanzen
+- **Lokale Filter-Chips** — nach Nutzung, Sonne, Wasser, pH, Vollständigkeit; AND-Logik, persistent
 - **Feldprovenenz** — `_sources` pro Datenpunkt; Quell-Badges im Edit-Dialog; Outline-Chips in Kacheln/Liste
-- **Einstellungsseite** — fünf Sektionen:
-  - Datenquellen aktivieren/deaktivieren
-  - Standard-Ansicht (Kacheln/Liste/Karten) und -Kartenvariante (Poly/Stripe/Baumscheibe) beim App-Start
-  - Theme: Auto / Hell / Dunkel
-  - Privatsphäre: Plausible-Reichweitenmessung deaktivieren (lokal)
-  - Daten: Pflanzenanzahl + Speicherverbrauch, JSON-Backup-Download, Golden Master neu laden, Danger-Zone „Alle Daten löschen"
-- **Dark Mode** — Tailwind-v4 Class-Variant; Pre-Paint-Inline-Skript (kein Light-Flash); Header-Toggle + 3-Stufen-Setting (Auto folgt OS)
-- **Reichweitenmessung** — Plausible Analytics, cookieless, EU-gehostet; In-App-Opt-out via `plausible_ignore`-Flag in den Settings
-- **Rechtliches** — Datenschutz-Seite (lokal-first, externe Dienste, Plausible inkl. Opt-out-Anleitung), Impressum (Stub), Hilfe/Glossar, Footer-Links auf jeder Seite
-- **PWA-Install-Prompts** — Android/Chrome: Banner via `beforeinstallprompt`; iOS Safari: Popup mit Add-to-Home-Screen-Anleitung; beide UA-/Standalone-erkannt und dismissable
-- **UI-Redesign**:
-  - Kachelansicht: Bildvorschau, farbiger Akzentstreifen nach Primärnutzung, Vollständigkeitsbalken
-  - Listenansicht: Akzentpunkt, Nutzungsdots-Spalte, Vollständigkeitsbalken, sortierbar nach Vollständigkeit
-  - Leerer Zustand: Fiddlehead-Illustration + CTA
-  - Pflanzenzahl-Chip im Header
-  - Visuelles Vokabular: ausgefüllte Badges = Verwendung, Outline-Chips = Datenquelle
-- **PWA / Offline** — Service Worker, installierbar auf Desktop & Mobil
+- **Tastatur-Shortcuts** — `/` Suche, `n` Neue Pflanze, `g/l/c` View-Wechsel, `?` Cheatsheet
+- **Einstellungsseite** — sechs Sektionen: Datenquellen, Ansicht, Theme, Privatsphäre, Daten, **Sync**
+- **Dark Mode** — 3-State-Toggle (Auto/Hell/Dunkel), Pre-Paint-Inline-Skript (kein Light-Flash)
+- **Plausible Analytics** — cookieless, EU-gehostet; In-App-Opt-out
+- **Rechtliches** — Datenschutz, Impressum (Stub), Hilfe/Glossar, Footer
+- **PWA-Install-Prompts** — Android Banner + iOS Safari Popup
+- **UI-Redesign** — Kacheln mit Bild/Akzentstreifen/Vollständigkeitsbalken, Listenansicht sortierbar, leerer Zustand mit CTA
+- **Gilden MVP** — `/gilden` Seite mit Editor, Rollen-Slots, mechanischen Vorschlägen aus eigenem Bestand (`compatScore` Sonne/Wasser/pH), kuratierte `role-suggestions.json` (6 Rollen), Internet-Import direkt aus dem Vorschlagspanel
+- **Backup & Sync**:
+  - JSON-Backup-Download (inkl. Gilden)
+  - Web Share API (teilen an andere Apps)
+  - Backup einlesen (Restore)
+  - **WebDAV-Sync** (PUT/GET, Credentials in localStorage, CORS-Hinweis)
+  - **Lokale Datei** (File System Access API, Chrome/Edge, `showSaveFilePicker`)
+  - **GitHub Gist** (privates Gist via PAT, Gist-ID automatisch gespeichert)
+  - **Auto-Sync** beim Tab-Verlassen (`visibilitychange`), lautlos, WebDAV → Gist Priorität
+  - `navigator.storage.persist()` gegen Browser-Eviction
+  - Backup-Reminder-Banner (30-Tage-Schwelle)
+  - Letzter Sync-Zeitstempel + Anbieter in den Einstellungen
+- **Service Worker** mit Build-Hash-Cache-Versioning
+- **DB-Schemaevolution** — v3 mit idempotenter Upgrade-Logik (alle fehlenden Stores werden nachträglich angelegt)
 
 ---
 
 ## Kurzfristig
 
 ### Launch-Blocker
-- [ ] **Impressum füllen** — aktuell Stub; vor öffentlichem Launch nach §5 TMG ergänzen (Name, Anschrift, Kontakt)
-- [ ] **Backup-Restore** — Settings → Daten: Backup-Download gibt's, Re-Import (JSON-Datei einlesen, alle Pflanzen + Settings wiederherstellen) fehlt — asymmetrisch
-- [ ] **Plausible-Domain** — `data-domain` in `Layout.astro` zeigt auf die Netlify-Subdomain; bei Custom-Domain anpassen + im Plausible-Dashboard registrieren
+- [ ] **Impressum füllen** — aktuell Stub; vor öffentlichem Launch nach §5 TMG ergänzen
+- [ ] **Plausible-Domain** — `data-domain` in `Layout.astro` auf Custom-Domain anpassen + im Plausible-Dashboard registrieren
+
+### Sync (Feinschliff)
+- [ ] **Konflikt-Erkennung** — vor dem Pull prüfen ob das Backup auf dem Server neuer ist als lokal; Warnung + Merge-Option statt blindem Überschreiben
+- [ ] **Sync-Status im Header** — kleines Icon (✓ / ⚠) das den letzten Auto-Sync-Status zeigt ohne in die Einstellungen zu müssen
+- [ ] **Background Sync API** — Service-Worker-basierter Sync, der auch funktioniert wenn die App geschlossen ist (Chrome only; graceful degradation)
+
+### Gilden (Feinschliff)
+- [ ] **PDF-Export einer Gilde** — Pflanzenkarten der Mitglieder als Set + optionale Übersichtsseite
+- [ ] **Bulk-Add aus Pflanzenliste** — „Auswahl zur Gilde X hinzufügen"
+- [ ] **Rollen-Vollständigkeits-Indikator** — welche Rollen noch fehlen, auf der Gildenkarte in der Listenansicht
+- [ ] **Inkompatibilitäts-Warnung** — z.B. Walnuss-Allelopathie (Juglone)
+
+### Baumscheibe-Karte (Feinschliff)
+- [ ] **Fehlende Felder in der SVG ergänzen** — `inkscape:label`-Overlays für `fruitMonths`/`flowerMonths`, `pioneer`, `layer`, Sonne/Wasser/pH-Icons
+- [ ] **Score-Sterne** — `eatableScore`/`medsScore`/`materialScore` als 5-Stern-Element in SVG anlegen
+- [ ] **SVG-Template optimieren** — derzeit 5 MB durch ~30 inline Base64-PNGs; via `svgo` / externe Raster
 
 ### UI / UX
-- [ ] **Lokaler Filter in der Pflanzenliste** — nach Nutzung, Sonne, Wasser, pH, Vollständigkeit; bei wachsender DB schnell unverzichtbar
-- [ ] **Theme-Toggle 3-State** — Header-Toggle setzt aktuell hart hell/dunkel und überschreibt „Auto"; sauber wäre Auto → Hell → Dunkel im Toggle (oder Hinweis, dass Toggle „Auto" deaktiviert)
-- [ ] **Tastatur-Shortcuts** — `/` Suche fokussieren, `Esc` Dialog schließen, `n` neue Pflanze, `g/l/c` View-Wechsel
-- [ ] **Bulk-Selection: Shift-Klick Range** — aktuell nur Einzel-Checkbox; Range-Select wäre Standard
-- [ ] **Empty-State auf `/cards`** — bei 0 Pflanzen ist „PDF exportieren" sinnlos; Hinweis + CTA wie auf Index
 - [ ] **Konfigurierbare Farbthemen** — Farbenblindheits-Modus
 - [ ] **Bild-Fallback** — Silhouette nach Pflanzentyp wenn kein Foto vorhanden
 
-### Baumscheibe-Karte (Feinschliff)
-- [ ] **Fehlende Felder in der SVG ergänzen** — `inkscape:label`-Overlays für `sunFull`/`sunMid`/`sunShadow`, `waterDry`/`waterMid`/`waterWet`, `phVeryAcid`/`phVeryAlkaline`/`phSaline`, `fruitMonths`/`flowerMonths`, `pioneer`, `layer` (Schicht); Renderer findet sie automatisch
-- [ ] **Score-Sterne** — `eatableScore`/`medsScore`/`materialScore` als 5-Stern-Element in SVG anlegen (siehe `.ods`: "5 Sterne statt 4")
-- [ ] **pH-Skala auf 5 Stufen** — Grafik anpassen (sauer / leicht sauer / neutral / leicht alkalisch / alkalisch)
-- [ ] **SVG-Template optimieren** — derzeit 5 MB durch ~30 inline Base64-PNGs; via `svgo` oder externe Raster-Verlinkung verkleinern
-
-### PDF-Rendering
-- [ ] Qualitäts-Check: Karten in mehreren Viewern testen (Chrome, Firefox, Evince, Okular)
-- [ ] Druckränder und Schnittmarken als Option
-
-### Feldprovenenz (Feinschliff)
-- [ ] **Kartenvorschau & PDF** — kompakte Quell-Darstellung auf der gedruckten Karte (z.B. farbiger Punkt-Cluster in der Infozeile)
-
-### QR-Code
-- [ ] QR-Code pro Karte (Link zur Wikidata-Seite oder eigener Pflanzendatensatz)
-
 ### Daten
-- [ ] **Pflanzenbild-Upload** — Bild lokal speichern (Base64 in IndexedDB oder File in OPFS), nicht nur externe URL
-- [ ] **Bild-Bearbeitung im Edit-Dialog** — Vorschau des aktuellen Bilds, ersetzen/löschen
-- [ ] Fehlende Felder: Boden-Typ, Ausbreitungsart (Samen/Ableger/Wurzel), Wurzeltiefe
-- [ ] Validierung verbessern: Warnungen bei unvollständigen Datensätzen
-
-### Vordefinierte Pflanzendatenbank (Golden Master, Feinschliff)
-- [ ] **Nutzerseitig editierbar** — Änderungen an Golden-Master-Pflanzen landen in IndexedDB (Override-Schicht), Original bleibt unverändert
-- [ ] **Pflege-Workflow** — Wie kommen neue kuratierte Pflanzen in die DB? (PR-Prozess definieren)
+- [ ] **Pflanzenbild-Upload** — Bild lokal speichern (Base64 in IndexedDB oder File in OPFS)
+- [ ] Fehlende Felder: Boden-Typ, Ausbreitungsart, Wurzeltiefe
 
 ---
 
 ## Mittelfristig
 
-### Gilden-Komposition
+### Ernte- & Blütenkalender
+- [ ] **Jahresübersicht** — aus `fruitMonths` + `flowerMonths` aller Pflanzen eine Monats-Heatmap generieren: wann blüht was, wann ist was erntereif
+- [ ] **Filter nach Saison** — „Was kann ich im Juli ernten?" als Schnellfilter
 
-Eine **Gilde** ist eine benannte Gruppe von Pflanzen rund um eine Ankerart
-(typischerweise ein Obstbaum), die sich gegenseitig fördert: Stickstofffixierer
-versorgen, Bodendecker halten Feuchtigkeit, Insektenpflanzen locken Bestäuber,
-Schädlings­konfusoren stören Schadinsekten, Mineraliensammler holen Nährstoffe
-aus der Tiefe.
+### Notizen & Beobachtungen
+- [ ] **Beobachtungs-Tagebuch pro Pflanze** — freie Notizen mit Datum (z.B. „Erstmals geblüht", „Mehltau bemerkt"), gespeichert in IndexedDB
+- [ ] **Foto-Upload pro Eintrag** — eigene Fotos direkt in der App
 
-**Phase 1 — MVP (mechanische Vorschläge aus eigenen Daten)**
+### Gilden — Kuratiertes Companion-Wissen (Phase 2)
+- [ ] **`companions.json` als Golden Master** — bekannte gute Kombinationen aus Standardliteratur (Jacke & Toensmeier, Crawford, Hemenway)
+- [ ] **Vorschläge erweitern** — mechanische Filter + Companion-Datenbank kombiniert
+- [ ] **Pflege-Workflow** für Companion-Daten (PR-Prozess)
 
-- [ ] **Datenmodell** — neuer IndexedDB-Store `guilds`:
-  ```ts
-  interface Guild {
-    id: string;
-    name: string;
-    description: string;
-    anchorPlantId: string;       // Hauptbaum/-strauch aus eigenem Bestand
-    members: GuildMember[];
-    notes: string;
-  }
-  interface GuildMember {
-    plantId: string;
-    role: 'companion' | 'groundCover' | 'nFixer' | 'mineralFixer'
-        | 'insectary' | 'pestConfuser' | 'fruitProducer' | 'other';
-    notes: string;
-  }
-  ```
-- [ ] **Seite `/gilden`** — Liste aller Gilden als Karten (Anker-Bild + Mitglieder-Chips
-  + Vollständigkeits-Indikator: welche Rollen besetzt, welche fehlen).
-- [ ] **Editor `/gilden/[id]`** — links die Gilde mit Rollen-Slots zum Befüllen,
-  rechts ein „Vorschläge"-Panel das die eigenen Pflanzen filtert nach:
-  - **Rolle füllt Lücke?** (z.B. Pflanze mit `nitrogenFix=true`, wenn N-Fixer-Slot leer ist)
-  - **Sonne/Wasser/pH überlappen** mit Ankerart und bestehenden Mitgliedern (Schnittmenge ≠ ∅)
-  - **Höhe passt ins Schichtmodell** (Anker oben, Begleiter darunter, Bodendecker unten)
-  - **Klimazone** kompatibel
-- [ ] **Bulk-Add aus Mehrfach­auswahl** — in der Pflanzenliste „Auswahl zur Gilde X hinzufügen"
-- [ ] **PDF-Export einer Gilde** — Pflanzkarten der Mitglieder als Set, optional Übersichtsseite
+### Gilden — Visualisierung (Phase 3)
+- [ ] **Schicht-Diagramm pro Gilde** — Baumkrone → Strauch → Staude → Bodendecker → Wurzel
+- [ ] **Kompatibilitäts-Matrix** als Heatmap (Sonne/Wasser/pH/Allelopathie)
 
-**Phase 2 — Kuratiertes Companion-Wissen**
-
-- [ ] **`companions.json` als Golden Master** — bekannt gute Kombinationen aus Standard­literatur
-  (Jacke & Toensmeier "Edible Forest Gardens", Crawford "Creating a Forest Garden",
-  Hemenway "Gaia's Garden"). Format z.B.:
-  ```json
-  { "anchor": "Malus domestica",
-    "companions": [
-      { "latin": "Symphytum officinale", "role": "mineralFixer", "evidence": "Crawford" },
-      { "latin": "Allium schoenoprasum", "role": "pestConfuser", "evidence": "Hemenway" }
-    ],
-    "antagonists": ["Juglans regia"]
-  }
-  ```
-- [ ] **Vorschläge erweitern** — neben den mechanischen Filtern Empfehlungen aus der
-  Companion-Datenbank einblenden, mit Quelle als Beleg
-- [ ] **Inkompatibilitäts-Warnung** — z.B. Walnuss-Allelopathie (Juglone hemmt viele Pflanzen)
-- [ ] **Pflege-Workflow** für Companion-Daten — wie kommen neue Einträge rein? (PR-Prozess)
-
-**Phase 3 — Visualisierung (verzahnt mit Visuelles Layout)**
-
-- [ ] **Schicht-Diagramm pro Gilde** — Baumkrone → Strauch → Staude → Bodendecker → Wurzel,
-  Mitglieder visuell auf ihrer Höhen­ebene
-- [ ] **Kompatibilitäts-Matrix** als Heatmap zwischen allen Mitgliedern (Sonne/Wasser/pH/Allelopathie)
-
-**Phase 4 — Strukturierte Suche via Wikidata-SPARQL (Experiment)**
-
-- [ ] **SPARQL-Endpoint anbinden** — `https://query.wikidata.org/sparql` direkt aus dem Browser
-  (CORS erlaubt). Beispiel-Query: alle Pflanzen mit Eigenschaft „Stickstoff-fixierend"
-  (Wikidata-Property `P3094` oder über Infer-Path via Familie Fabaceae).
-- [ ] **Property-Mapping** — welche Wikidata-Properties decken unsere Felder ab? (Höhe = `P2048`,
-  Klimazone = ?, Ökosystem-Funktionen oft fehlend). Ein systematisches Mapping aufbauen, Lücken
-  dokumentieren.
-- [ ] **Filter-Builder im Vorschlags-Panel** — „finde Pflanze mit Sonne=voll, Wasser=trocken,
-  Rolle=Bodendecker" → SPARQL generieren, Ergebnisse mit Bestand abgleichen, Importieren.
-- **Risiko:** Wikidata-Coverage für ökologische Properties ist dünn; viele wichtige Eigenschaften
-  (Allelopathie, Companion-Verträglichkeit) sind nicht modelliert. Nur sinnvoll als Ergänzung,
-  nicht als Ersatz für die kuratierten `companions.json` aus Phase 2.
+### Gilden — SPARQL (Phase 4, Experiment)
+- [ ] **Wikidata-SPARQL** direkt aus dem Browser — z.B. alle Stickstoff-fixierenden Pflanzen
+- [ ] **Filter-Builder** im Vorschlags-Panel → SPARQL generieren, importieren
+- ⚠ Wikidata-Coverage für ökologische Properties dünn; als Ergänzung, nicht Ersatz
 
 ### Visuelles Layout
-- [ ] Pflanzplan-Ansicht: Bäume/Sträucher als Kreise auf einem 2D-Raster platzieren
-- [ ] Maßstabstreue Darstellung (z.B. 1 m = 10 px), Export als SVG/PNG
-- [ ] Schichtmodell-Visualisierung (Baumkrone → Strauch → Staude → Bodendecker → Wurzel)
+- [ ] Pflanzplan-Ansicht: Bäume/Sträucher als Kreise auf 2D-Raster, maßstäblich
+- [ ] Schichtmodell-Visualisierung
+- [ ] Export als SVG/PNG
 
 ### Datenquellen
-- [ ] Offline-Datenbank einbinden (z.B. Open Food Facts Pflanzen, GBIF-Subset)
-- [ ] Eigene Proxy-Erweiterungen: weitere Quellen (Pflanzkollektiv, OpenEcoSystems)
+- [ ] Offline-Datenbank (GBIF-Subset o.ä.)
+- [ ] Weitere Proxy-Quellen (Pflanzkollektiv, OpenEcoSystems)
 - [ ] Wikidata-Properties erweitern (Bestäuber, Schädlingsabwehr)
 
 ---
 
 ## Langfristig
 
+### Kuratierte Gilden als Community-Layer
+Öffentlich geteilte Gilden (z.B. „Apfelbaum-Gilde nach Crawford") zum Importieren.
+Erfordert ein Backend oder ein standardisiertes JSON-Schema für den Austausch.
+Mögliche Einstiegspunkte: GitHub-Repository mit kuratierten Gilden-JSONs (PR-Workflow),
+später optionales Abo-Modell für gepflegte Sammlungen.
+
 ### PocketBase als Server-Backend (Option)
-
-Aktuell speichert die App alle Daten lokal im Browser (IndexedDB). PFAF/NaturaDB-Abfragen laufen über eine Netlify Serverless Function als CORS-Proxy.
-
-Ein Wechsel zu **PocketBase** (selbst-gehostetes Open-Source-Backend, SQLite + REST + Realtime) würde folgende Use Cases ermöglichen:
 
 | Use Case | Jetzt (PWA + Netlify) | Mit PocketBase |
 |---|---|---|
 | Datenspeicher | IndexedDB, pro Browser | SQLite auf eigenem Server |
-| Multi-Gerät-Sync | ✗ | ✓ automatisch |
-| Gemeinsame Pflanzenbibliothek | ✗ | ✓ (geteilte DB) |
-| Offline-Nutzung | ✓ vollständig | möglich, aber Sync-Logik nötig |
-| PFAF/NaturaDB-Proxy | Netlify Function | PocketBase Hook oder eigene Route |
+| Multi-Gerät-Sync | WebDAV / Gist (manuell + auto) | automatisch, Real-Time |
+| Gemeinsame Pflanzenbibliothek | ✗ | ✓ |
+| Offline-Nutzung | ✓ vollständig | möglich, Sync-Logik nötig |
 | Auth / Benutzerkonten | — | eingebaut (OAuth2, E-Mail) |
-| Deployment | Netlify (kostenlos) | VPS / Fly.io / Railway (ab ~5 €/Mo.) |
-| Datenverlust bei Browser-Löschung | ✓ Risiko | ✗ kein Risiko |
-| Komplexität | gering | mittel |
+| Deployment | Netlify (kostenlos) | VPS / Fly.io (ab ~5 €/Mo.) |
 
-**Wann sinnvoll:** mehrere Geräte, mehrere Nutzer, geteilte Pflanzenbibliothek, kein Datenverlustrisiko.  
-**Wann nicht:** rein persönliches Einzelgerät-Tool, vollständige Offline-Nutzung ohne Sync-Aufwand.
-
-Mögliche Migrationsstrategie: PocketBase als optionaler Sync-Layer, IndexedDB bleibt primärer Cache — ähnlich wie Google Docs offline-first mit Cloud-Sync.
+**Wann sinnvoll:** mehrere Nutzer, geteilte Bibliothek, kein Datenverlustrisiko.
 
 ### Mehrsprachigkeit
-- [ ] UI auf Englisch lokalisieren (i18n-Infrastruktur aufsetzen)
-- [ ] Pflanzennamen mehrsprachig speichern (de/en/la)
-
-### Zusammenarbeit
-- [ ] Export-Format für den Austausch mit anderen Nutzern (standardisiertes JSON-Schema)
-- [ ] Optionaler Cloud-Sync (z.B. via eigenen Server oder CRDTs für Peer-to-Peer)
+- [ ] UI auf Englisch lokalisieren
+- [ ] Pflanzennamen mehrsprachig (de/en/la)
 
 ### Migration PowerShell → PWA
-- [ ] PowerShell-Skripte als Legacy markieren, README aktualisieren (PWA als primären Einstieg dokumentieren)
-- [ ] Migrationshilfe: Import bestehender `.psd1`-Datensätze in die PWA
+- [ ] PowerShell-Skripte als Legacy markieren
+- [ ] Import bestehender `.psd1`-Datensätze
 
 ---
 
@@ -214,19 +144,11 @@ Mögliche Migrationsstrategie: PocketBase als optionaler Sync-Layer, IndexedDB b
 
 | Problem | Status |
 |---|---|
-| PDF-Streifen in LibreWolf (SMask/pdf.js) | ✅ behoben — raw RGB via `flateStream`, kein SMask |
-| Baumscheibe-PDF lahm + diagonal-streifig in Firefox/pdf.js | ✅ behoben — Firefox-Pfad nutzt nativen Druckdialog (vektoriell), Chrome/Safari weiter Canvas→JPEG→pdf-lib |
-| Dark-Mode-Bulk-Substitution leakte `dark:`-Klassen aus Variant-Präfixen heraus und brach View-Toggle-Buttons via `classList.add` mit Space-Strings | ✅ behoben — Regex mit START-Lookbehind/END-Lookahead, JS-Array-Tokens manuell aufgesplittet |
-| `svg-template.ts` und `card-svg.ts` — redundant neben Canvas-Renderer | ✅ gelöscht |
-| Root-Verzeichnis enthält Build-Artefakte (`index.html`, `sw.js`, `manifest.json`) | ✅ bereinigt |
-| PowerShell-Skripte als Legacy markieren, README aktualisieren | ✅ nach `legacy/` verschoben |
-| `netlify.toml` in `pwa/` — Proxy-Functions nicht erreichbar | ✅ behoben — `netlify.toml` ins Repo-Root mit `base = "pwa"` |
-| Branch `ui` noch nicht auf `main` gemergt | ✅ gemergt (commit 326accf) |
-| Reset-Button auf Settings sinnlos | ✅ entfernt |
-| Edit-Dialog im Dark Mode weiß | ✅ behoben — `bg-white dark:bg-stone-900` auf `<dialog>` + Inputs |
-| Selektierte Listen-Zeilen ohne Dark-Variante | ✅ behoben — `bg-green-50 dark:bg-green-900/30` |
-| Netlify-Proxy hat kein Rate-Limiting | offen |
-| Netlify-Proxy manchmal nicht erreichbar (keine Suchergebnisse für PFAF/NaturaDB) | offen |
-| Service Worker Cache-Version muss manuell erhöht werden | offen — Build-Hash automatisieren |
-| Baumscheibe-SVG-Template ist 5 MB (inline Base64-PNGs) | offen — via `svgo` / externe Raster |
-| Theme-Toggle im Header überschreibt „Auto" hart, ohne Hinweis | offen — siehe Kurzfristig „Theme-Toggle 3-State" |
+| PDF-Streifen in LibreWolf (SMask/pdf.js) | ✅ behoben — raw RGB via `flateStream` |
+| Baumscheibe-PDF in Firefox | ✅ behoben — Firefox nutzt nativen Druckdialog (vektoriell) |
+| Dark-Mode-Bulk-Substitution (View-Toggle-Buttons) | ✅ behoben |
+| Beispieldaten-Import schlägt auf Deploy fehl | ✅ behoben — Filter-Reset + DB-v3-Upgrade |
+| DB v2 fehlender `plants`-Store | ✅ behoben — v3 idempotente Upgrade-Logik |
+| Netlify-Proxy kein Rate-Limiting | offen |
+| Baumscheibe-SVG-Template 5 MB (inline Base64) | offen — via `svgo` / externe Raster |
+| GitHub Gist: kein Konflikt-Abgleich beim Pull | offen — siehe Kurzfristig Sync |
