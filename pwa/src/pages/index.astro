@@ -626,16 +626,6 @@ import Layout from '../layouts/Layout.astro';
   async function renderList() {
     cachedPlants = await getAllPlants();
 
-    // Update header plant count chip
-    const countEl = document.getElementById('plant-count');
-    if (countEl) {
-      if (cachedPlants.length > 0) {
-        countEl.textContent = `${cachedPlants.length} Pflanzen`;
-        countEl.classList.remove('hidden');
-      } else {
-        countEl.classList.add('hidden');
-      }
-    }
 
     if (cachedPlants.length === 0) {
       listEl.className = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3';
