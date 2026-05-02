@@ -1,0 +1,192 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Perma Guild Forge — Kalender">
+  <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100">Ernte- &amp; Blütenkalender</h1>
+      <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Wann blüht was, wann ist was erntereif — aus deinen Pflanzendaten.</p>
+    </div>
+    <div class="flex items-center gap-4 text-xs text-stone-600 dark:text-stone-300">
+      <span class="flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-amber-400 dark:bg-amber-500"></span>Blüte</span>
+      <span class="flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-green-500 dark:bg-green-400"></span>Ernte</span>
+      <span class="flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-emerald-400 dark:bg-emerald-500"></span>Beides</span>
+    </div>
+  </div>
+
+  <!-- Monatliche Übersicht -->
+  <section class="mb-8">
+    <h2 class="mb-3 text-xs font-semibold uppercase tracking-wide text-stone-400 dark:text-stone-500">Überblick</h2>
+    <div id="overview" class="grid grid-cols-6 gap-2 sm:grid-cols-12"></div>
+  </section>
+
+  <!-- Filter -->
+  <div class="mb-4 flex flex-wrap items-center gap-3">
+    <input type="search" id="kalender-search" placeholder="Pflanze suchen…"
+      class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none w-52" />
+    <label class="inline-flex items-center gap-1.5 cursor-pointer text-sm">
+      <input type="checkbox" id="filter-flower" checked class="accent-amber-500" />
+      <span class="text-stone-700 dark:text-stone-300">Blüte</span>
+    </label>
+    <label class="inline-flex items-center gap-1.5 cursor-pointer text-sm">
+      <input type="checkbox" id="filter-fruit" checked class="accent-green-600" />
+      <span class="text-stone-700 dark:text-stone-300">Ernte</span>
+    </label>
+    <span id="kalender-count" class="text-xs text-stone-400 dark:text-stone-500 ml-auto"></span>
+  </div>
+
+  <!-- Detailtabelle -->
+  <div class="overflow-x-auto rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+    <div id="calendar-table" class="min-w-[640px]"></div>
+  </div>
+
+  <!-- Empty states -->
+  <div id="empty-no-data" hidden class="mt-16 text-center">
+    <p class="text-stone-500 dark:text-stone-400">Noch keine Pflanzen mit Blüte- oder Erntedaten.</p>
+    <a href="/" class="mt-2 inline-block text-sm text-green-700 dark:text-green-400 hover:underline">Pflanzen anlegen oder importieren →</a>
+  </div>
+  <div id="empty-no-match" hidden class="mt-8 text-center text-sm text-stone-400 dark:text-stone-500">
+    Keine Pflanzen entsprechen dem Filter.
+  </div>
+</Layout>
+
+<script>
+  import { getAllPlants } from '../lib/db';
+  import type { PlantData } from '../lib/types';
+
+  const MONTHS = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const NOW_MONTH = new Date().getMonth();
+
+  const searchInput  = document.getElementById('kalender-search') as HTMLInputElement;
+  const filterFlower = document.getElementById('filter-flower') as HTMLInputElement;
+  const filterFruit  = document.getElementById('filter-fruit') as HTMLInputElement;
+  const overviewEl   = document.getElementById('overview')!;
+  const tableEl      = document.getElementById('calendar-table')!;
+  const countEl      = document.getElementById('kalender-count')!;
+  const emptyNoData  = document.getElementById('empty-no-data')!;
+  const emptyNoMatch = document.getElementById('empty-no-match')!;
+
+  let allPlants: PlantData[] = [];
+
+  function hasActivity(p: PlantData): boolean {
+    return !!(p.flowerMonths?.some(Boolean) || p.fruitMonths?.some(Boolean));
+  }
+
+  function getFiltered(): PlantData[] {
+    const q = searchInput.value.toLowerCase().trim();
+    const showF = filterFlower.checked;
+    const showR = filterFruit.checked;
+    return allPlants.filter(p => {
+      if (!hasActivity(p)) return false;
+      if (q && !p.latinName.toLowerCase().includes(q) && !(p.commonName || '').toLowerCase().includes(q)) return false;
+      if (!showF && !showR) return false;
+      const hasFlower = showF && !!(p.flowerMonths?.some(Boolean));
+      const hasFruit  = showR && !!(p.fruitMonths?.some(Boolean));
+      return hasFlower || hasFruit;
+    });
+  }
+
+  function renderOverview(plants: PlantData[]) {
+    const flowerCounts = Array(12).fill(0);
+    const fruitCounts  = Array(12).fill(0);
+    plants.forEach(p => {
+      p.flowerMonths?.forEach((v, i) => { if (v) flowerCounts[i]++; });
+      p.fruitMonths?.forEach((v, i) => { if (v) fruitCounts[i]++; });
+    });
+    const maxCount = Math.max(...flowerCounts, ...fruitCounts, 1);
+
+    overviewEl.innerHTML = MONTHS.map((m, i) => {
+      const fc = flowerCounts[i];
+      const rc = fruitCounts[i];
+      const total = fc + rc;
+      const isNow = i === NOW_MONTH;
+      const fH = Math.max(fc > 0 ? 4 : 0, Math.round((fc / maxCount) * 44));
+      const rH = Math.max(rc > 0 ? 4 : 0, Math.round((rc / maxCount) * 44));
+      return `
+        <div class="rounded-lg p-2 text-center ${isNow
+          ? 'ring-2 ring-green-500 bg-green-50 dark:bg-green-900/20'
+          : 'bg-stone-50 dark:bg-stone-900'}">
+          <p class="text-xs font-semibold ${isNow ? 'text-green-700 dark:text-green-400' : 'text-stone-500 dark:text-stone-400'}">${m}</p>
+          <div class="mt-1 flex items-end justify-center gap-0.5" style="height:50px">
+            <div class="w-3.5 rounded-t bg-amber-400 dark:bg-amber-500 transition-all" style="height:${fH}px" title="${fc} blühend"></div>
+            <div class="w-3.5 rounded-t bg-green-500 dark:bg-green-400 transition-all" style="height:${rH}px" title="${rc} erntereif"></div>
+          </div>
+          <p class="mt-0.5 text-[10px] ${total > 0 ? 'text-stone-400 dark:text-stone-500' : 'text-transparent'}">${total}</p>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function cellBg(flower: boolean, fruit: boolean): string {
+    if (flower && fruit) return 'bg-emerald-400 dark:bg-emerald-500';
+    if (flower) return 'bg-amber-300 dark:bg-amber-500';
+    if (fruit)  return 'bg-green-500 dark:bg-green-400';
+    return '';
+  }
+
+  function renderTable(plants: PlantData[]) {
+    const showF = filterFlower.checked;
+    const showR = filterFruit.checked;
+
+    const headerCells = MONTHS.map((m, i) => {
+      const isNow = i === NOW_MONTH;
+      return `<div class="flex h-8 items-center justify-center text-xs font-medium ${isNow ? 'text-green-600 dark:text-green-400 font-bold' : 'text-stone-400 dark:text-stone-500'}">${m}</div>`;
+    }).join('');
+
+    const rows = plants.map(p => {
+      const name = p.commonName || p.latinName;
+      const sub  = p.commonName ? `<span class="block text-[10px] italic text-stone-400 dark:text-stone-500 truncate">${p.latinName}</span>` : '';
+      const cells = MONTHS.map((_, i) => {
+        const flower = showF && !!(p.flowerMonths?.[i]);
+        const fruit  = showR && !!(p.fruitMonths?.[i]);
+        const bg = cellBg(flower, fruit);
+        const isNow = i === NOW_MONTH;
+        return `<div class="flex h-9 items-center justify-center ${bg ? bg + ' rounded' : ''} ${isNow ? 'ring-1 ring-inset ring-green-400/30' : ''}"></div>`;
+      }).join('');
+      return `
+        <div class="grid items-center border-b border-stone-100 dark:border-stone-700/50 last:border-0 hover:bg-stone-50 dark:hover:bg-stone-700/30 transition-colors" style="grid-template-columns:180px repeat(12,1fr)">
+          <div class="border-r border-stone-200 dark:border-stone-700 px-3 py-1.5">
+            <span class="block truncate text-sm font-medium text-stone-800 dark:text-stone-100">${name}</span>
+            ${sub}
+          </div>
+          ${cells}
+        </div>
+      `;
+    }).join('');
+
+    tableEl.innerHTML = `
+      <div class="grid border-b border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-900/50" style="grid-template-columns:180px repeat(12,1fr)">
+        <div class="border-r border-stone-200 dark:border-stone-700 px-3 py-2 text-xs font-medium text-stone-500 dark:text-stone-400">Pflanze</div>
+        ${headerCells}
+      </div>
+      <div>${rows}</div>
+    `;
+  }
+
+  function render() {
+    const active = allPlants.filter(hasActivity);
+    const filtered = getFiltered();
+
+    emptyNoData.hidden  = active.length > 0;
+    emptyNoMatch.hidden = active.length === 0 || filtered.length > 0;
+    tableEl.style.display = filtered.length === 0 ? 'none' : '';
+
+    countEl.textContent = filtered.length === active.length
+      ? `${active.length} Pflanzen`
+      : `${filtered.length} / ${active.length} Pflanzen`;
+
+    renderOverview(filtered);
+    renderTable(filtered);
+  }
+
+  searchInput.addEventListener('input', render);
+  filterFlower.addEventListener('change', render);
+  filterFruit.addEventListener('change', render);
+
+  getAllPlants().then(plants => {
+    allPlants = plants
+      .filter(hasActivity)
+      .sort((a, b) => (a.commonName || a.latinName).localeCompare(b.commonName || b.latinName, 'de'));
+    render();
+  });
+</script>
