@@ -38,6 +38,8 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
   - Letzter Sync-Zeitstempel + Anbieter in den Einstellungen
 - **Service Worker** mit Build-Hash-Cache-Versioning
 - **DB-Schemaevolution** — v3 mit idempotenter Upgrade-Logik (alle fehlenden Stores werden nachträglich angelegt)
+- **Ernte- & Blütenkalender** (`/kalender`) — neue Seite mit Monats-Heatmap-Überblick aus `fruitMonths`/`flowerMonths` aller Pflanzen, per-Pflanze-Detailtabelle, Suche/Filter, aktueller Monat hervorgehoben; Nav-Link im Header
+- **Baumscheibe Name-Fix** — `commonName` und `latinName` werden jetzt korrekt gerendert: SVG-`<image>`-Platzhalter werden ausgeblendet, echte `<text>`-Elemente an gleicher Bounding-Box-Position eingefügt; Latein kursiv
 
 ---
 
@@ -74,10 +76,6 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 ---
 
 ## Mittelfristig
-
-### Ernte- & Blütenkalender
-- [ ] **Jahresübersicht** — aus `fruitMonths` + `flowerMonths` aller Pflanzen eine Monats-Heatmap generieren: wann blüht was, wann ist was erntereif
-- [ ] **Filter nach Saison** — „Was kann ich im Juli ernten?" als Schnellfilter
 
 ### Notizen & Beobachtungen
 - [ ] **Beobachtungs-Tagebuch pro Pflanze** — freie Notizen mit Datum (z.B. „Erstmals geblüht", „Mehltau bemerkt"), gespeichert in IndexedDB
