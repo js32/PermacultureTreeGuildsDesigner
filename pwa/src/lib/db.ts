@@ -97,3 +97,12 @@ export async function deleteGuild(id: string): Promise<void> {
   const db = await getDB();
   await db.delete('guilds', id);
 }
+
+export async function importGuilds(guilds: Guild[]): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction('guilds', 'readwrite');
+  for (const guild of guilds) {
+    await tx.store.put(guild);
+  }
+  await tx.done;
+}

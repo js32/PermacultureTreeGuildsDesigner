@@ -208,7 +208,7 @@ import Layout from '../layouts/Layout.astro';
     isPlausibleOptedOut, setPlausibleOptOut,
     type AppSettings, type ViewMode, type CardVariant, type ThemePref,
   } from '../lib/settings';
-  import { getAllPlants, importPlants, clearAllPlants } from '../lib/db';
+  import { getAllPlants, importPlants, clearAllPlants, importGuilds } from '../lib/db';
   import { buildBackupJson, rememberSyncAt, isAutoSyncEnabled } from '../lib/sync';
 
   const sourcesList = document.getElementById('sources-list')!;
@@ -470,14 +470,16 @@ import Layout from '../layouts/Layout.astro';
       const data = await res.json();
       const restoredPlants = Array.isArray(data) ? data : (data.plants ?? []);
       if (!Array.isArray(restoredPlants)) throw new Error('Ungültiges Backup-Format');
+      const restoredGuilds = Array.isArray(data) ? [] : (data.guilds ?? []);
       await importPlants(restoredPlants);
+      if (restoredGuilds.length) await importGuilds(restoredGuilds);
       if (!Array.isArray(data) && data.settings) {
         saveSettings(data.settings);
         settings = loadSettings();
         renderSources(); renderPrefs();
       }
       await renderStats();
-      setWebdavStatus(`${restoredPlants.length} Pflanzen wiederhergestellt.`, 'ok');
+      setWebdavStatus(`${restoredPlants.length} Pflanzen, ${restoredGuilds.length} Gilden wiederhergestellt.`, 'ok');
     } catch (err) {
       setWebdavStatus(`Fehler: ${(err as Error).message}. Prüfe URL, Zugangsdaten und CORS.`, 'err');
     }
@@ -529,15 +531,17 @@ import Layout from '../layouts/Layout.astro';
         const data = JSON.parse(text);
         const plants = Array.isArray(data) ? data : (data.plants ?? []);
         if (!Array.isArray(plants)) throw new Error('Ungültiges Format');
-        if (!confirm(`${plants.length} Pflanzen aus Datei einlesen und bestehende überschreiben?`)) return;
+        const guilds = Array.isArray(data) ? [] : (data.guilds ?? []);
+        if (!confirm(`${plants.length} Pflanzen${guilds.length ? `, ${guilds.length} Gilden` : ''} aus Datei einlesen und bestehende überschreiben?`)) return;
         await importPlants(plants);
+        if (guilds.length) await importGuilds(guilds);
         if (!Array.isArray(data) && data.settings) {
           saveSettings(data.settings);
           settings = loadSettings();
           renderSources(); renderPrefs();
         }
         await renderStats();
-        setFsaStatus(`${plants.length} Pflanzen wiederhergestellt.`, 'ok');
+        setFsaStatus(`${plants.length} Pflanzen, ${guilds.length} Gilden wiederhergestellt.`, 'ok');
       } catch (err) {
         if ((err as Error).name !== 'AbortError') setFsaStatus(`Fehler: ${err}`, 'err');
       }
@@ -636,14 +640,16 @@ import Layout from '../layouts/Layout.astro';
       const data = JSON.parse(raw);
       const plants = Array.isArray(data) ? data : (data.plants ?? []);
       if (!Array.isArray(plants)) throw new Error('Ungültiges Backup-Format');
+      const guilds = Array.isArray(data) ? [] : (data.guilds ?? []);
       await importPlants(plants);
+      if (guilds.length) await importGuilds(guilds);
       if (!Array.isArray(data) && data.settings) {
         saveSettings(data.settings);
         settings = loadSettings();
         renderSources(); renderPrefs();
       }
       await renderStats();
-      setGistStatus(`${plants.length} Pflanzen wiederhergestellt.`, 'ok');
+      setGistStatus(`${plants.length} Pflanzen, ${guilds.length} Gilden wiederhergestellt.`, 'ok');
     } catch (err) {
       setGistStatus(`Fehler: ${(err as Error).message}`, 'err');
     }
@@ -661,18 +667,20 @@ import Layout from '../layouts/Layout.astro';
       if (!Array.isArray(plants) || plants.length === 0) {
         throw new Error('Keine Pflanzen im Backup gefunden');
       }
+      const guilds: any[] = Array.isArray(data) ? [] : (data.guilds ?? []);
       const restoreSettings = !Array.isArray(data) && data.settings;
-      const msg = restoreSettings
-        ? `${plants.length} Pflanzen + Einstellungen aus Backup einlesen? Bestehende Pflanzen mit gleicher ID werden überschrieben.`
-        : `${plants.length} Pflanzen aus Backup einlesen? Bestehende Pflanzen mit gleicher ID werden überschrieben.`;
+      const guildPart = guilds.length ? ` + ${guilds.length} Gilden` : '';
+      const settingsPart = restoreSettings ? ' + Einstellungen' : '';
+      const msg = `${plants.length} Pflanzen${guildPart}${settingsPart} aus Backup einlesen? Bestehende Einträge mit gleicher ID werden überschrieben.`;
       if (!confirm(msg)) { input.value = ''; return; }
       await importPlants(plants);
+      if (guilds.length) await importGuilds(guilds);
       if (restoreSettings) {
         saveSettings(data.settings);
         settings = loadSettings();
         renderSources(); renderPrefs();
       }
-      showToast(`${plants.length} Pflanzen wiederhergestellt`);
+      showToast(`${plants.length} Pflanzen${guildPart} wiederhergestellt`);
       await renderStats();
     } catch (err) {
       alert(`Backup-Import fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
