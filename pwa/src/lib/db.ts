@@ -14,19 +14,23 @@ interface PlantDB extends DBSchema {
 }
 
 const DB_NAME = 'permaculture-guilds';
-// v2: added 'guilds' store. Migration is non-destructive — existing 'plants'
-// data carries over because we only call createObjectStore for stores that
-// don't yet exist.
-const DB_VERSION = 2;
+// v3: idempotent self-healing upgrade. Some browsers ended up with a v2 DB
+// that was missing the 'plants' store after an inconsistent upgrade path
+// (Symptom: "Failed to execute 'transaction' … object store not found").
+// Bumping to v3 forces the upgrade to run for everyone; the handler then
+// checks each store individually and creates any that are missing — so
+// fresh installs, legacy v1 plants-only DBs, and broken v2 DBs all
+// converge to the same shape.
+const DB_VERSION = 3;
 
 function getDB() {
   return openDB<PlantDB>(DB_NAME, DB_VERSION, {
-    upgrade(db, oldVersion) {
-      if (oldVersion < 1) {
+    upgrade(db) {
+      if (!db.objectStoreNames.contains('plants')) {
         const store = db.createObjectStore('plants', { keyPath: 'id' });
         store.createIndex('by-latin', 'latinName');
       }
-      if (oldVersion < 2) {
+      if (!db.objectStoreNames.contains('guilds')) {
         db.createObjectStore('guilds', { keyPath: 'id' });
       }
     },
