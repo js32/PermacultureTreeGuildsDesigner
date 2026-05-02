@@ -33,6 +33,31 @@ function setText(el: Element, value: string) {
   (tspan ?? el).textContent = value;
 }
 
+// commonName / latinName in the SVG template are <image> placeholder rasters,
+// not text elements. We hide the placeholder and inject a real <text> element
+// at the same bounding-box coordinates (measured from the SVG source).
+const NAME_BOXES = {
+  commonName: { x: 661, y: 590, w: 975, h: 91, fontSize: 65, italic: false },
+  latinName:  { x: 819, y: 435, w: 619, h: 97, fontSize: 55, italic: true  },
+} as const;
+
+function injectNameText(svg: SVGSVGElement, field: keyof typeof NAME_BOXES, value: string) {
+  const cfg = NAME_BOXES[field];
+  for (const el of findByLabel(svg, [field])) el.setAttribute('display', 'none');
+  if (!value) return;
+  const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  text.setAttribute('x', String(cfg.x + cfg.w / 2));
+  text.setAttribute('y', String(cfg.y + cfg.h * 0.78));
+  text.setAttribute('text-anchor', 'middle');
+  text.setAttribute('font-family', 'Inter, sans-serif');
+  text.setAttribute('font-size', String(cfg.fontSize));
+  text.setAttribute('fill', '#000000');
+  text.setAttribute('fill-opacity', '0.63');
+  if (cfg.italic) text.setAttribute('font-style', 'italic');
+  text.textContent = value;
+  svg.appendChild(text);
+}
+
 function setVisible(el: Element, on: boolean) {
   if (on) el.removeAttribute('display');
   else el.setAttribute('display', 'none');
@@ -49,6 +74,9 @@ export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
     const text = v == null || v === '' ? '' : String(v);
     for (const el of findByLabel(svg, labels)) setText(el, text);
   }
+
+  injectNameText(svg, 'commonName', plant.commonName || '');
+  injectNameText(svg, 'latinName',  plant.latinName  || '');
 
   for (const [field, labels] of Object.entries(BOOL_FIELDS)) {
     if (!labels) continue;

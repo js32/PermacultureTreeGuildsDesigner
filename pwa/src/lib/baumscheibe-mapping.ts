@@ -6,8 +6,8 @@ import type { PlantData } from './types';
 // ("Edible", "PH-acid"). Renderer matches any label in the array.
 
 export const TEXT_FIELDS: Partial<Record<keyof PlantData, string[]>> = {
-  latinName:   ['latinName',   'Name-bot'],
-  commonName:  ['commonName',  'Name-cmn'],
+  // latinName / commonName are handled separately in the renderer —
+  // the SVG has image placeholders there, not text elements.
   heightM:     ['heightM',     'Dim-height'],
   widthM:      ['widthM',      'Dim-diameter'],
   climateZone: ['climateZone'],
