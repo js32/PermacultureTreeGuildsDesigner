@@ -141,6 +141,12 @@ const { title } = Astro.props;
     </div>
 
     <script>
+      import { autoSyncIfConfigured } from '../lib/sync';
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) autoSyncIfConfigured().catch(() => {});
+      });
+    </script>
+    <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js');
       }
