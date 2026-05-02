@@ -28,7 +28,7 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - **Backup & Sync**:
   - JSON-Backup-Download (inkl. Gilden)
   - Web Share API (teilen an andere Apps)
-  - Backup einlesen (Restore)
+  - Backup einlesen (Restore, inkl. Gilden)
   - **WebDAV-Sync** (PUT/GET, Credentials in localStorage, CORS-Hinweis)
   - **Lokale Datei** (File System Access API, Chrome/Edge, `showSaveFilePicker`)
   - **GitHub Gist** (privates Gist via PAT, Gist-ID automatisch gespeichert)
@@ -150,3 +150,4 @@ später optionales Abo-Modell für gepflegte Sammlungen.
 | Netlify-Proxy kein Rate-Limiting | offen |
 | Baumscheibe-SVG-Template 5 MB (inline Base64) | offen — via `svgo` / externe Raster |
 | GitHub Gist: kein Konflikt-Abgleich beim Pull | offen — siehe Kurzfristig Sync |
+| Backup-Restore ignorierte Gilden in allen pull/import-Pfaden | ✅ behoben — `importGuilds()` in `db.ts`, alle vier Restore-Handler in `settings.astro` |
