@@ -44,11 +44,11 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 ---
 
 ## Kurzfristig
-### ==Baumscheibe Karte Feinschliff==
+### Baumscheibe Karte Feinschliff
 - [ ] SVG neu generieren mit anpassungen in baumscheibe3-data-fields.ods
 - [ ] Code anpassen analog baumscheibe3-data-fields.ods
 
-### ==PDF Generierung==
+### PDF Generierung
 - [ ] Größen anpassen: 6 Baumscheiben pro Seite, 9cm Durchmesser
 - [ ] zweite Option: Größen entsprechend Baumdurchmesser
 
