@@ -24,11 +24,11 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - **Rechtliches** — Datenschutz, Impressum (Stub), Hilfe/Glossar, Footer
 - **PWA-Install-Prompts** — Android Banner + iOS Safari Popup
 - **UI-Redesign** — Kacheln mit Bild/Akzentstreifen/Vollständigkeitsbalken, Listenansicht sortierbar, leerer Zustand mit CTA
-- **Gilden MVP** — `/gilden` Seite mit Editor, Rollen-Slots, mechanischen Vorschlägen aus eigenem Bestand (`compatScore` Sonne/Wasser/pH), kuratierte `role-suggestions.json` (6 Rollen), Internet-Import direkt aus dem Vorschlagspanel
+- **Polykulturen MVP** — `/Polykulturen` Seite mit Editor, Rollen-Slots, mechanischen Vorschlägen aus eigenem Bestand (`compatScore` Sonne/Wasser/pH), kuratierte `role-suggestions.json` (6 Rollen), Internet-Import direkt aus dem Vorschlagspanel
 - **Backup & Sync**:
-  - JSON-Backup-Download (inkl. Gilden)
+  - JSON-Backup-Download (inkl. Polykulturen)
   - Web Share API (teilen an andere Apps)
-  - Backup einlesen (Restore, inkl. Gilden)
+  - Backup einlesen (Restore, inkl. Polykulturen)
   - **WebDAV-Sync** (PUT/GET, Credentials in localStorage, CORS-Hinweis)
   - **Lokale Datei** (File System Access API, Chrome/Edge, `showSaveFilePicker`)
   - **GitHub Gist** (privates Gist via PAT, Gist-ID automatisch gespeichert)
@@ -44,6 +44,13 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 ---
 
 ## Kurzfristig
+### ==Baumscheibe Karte Feinschliff==
+- [ ] SVG neu generieren mit anpassungen in baumscheibe3-data-fields.ods
+- [ ] Code anpassen analog baumscheibe3-data-fields.ods
+
+### ==PDF Generierung==
+- [ ] Größen anpassen: 6 Baumscheiben pro Seite, 9cm Durchmesser
+- [ ] zweite Option: Größen entsprechend Baumdurchmesser
 
 ### Launch-Blocker
 - [ ] **Impressum füllen** — aktuell Stub; vor öffentlichem Launch nach §5 TMG ergänzen
@@ -54,10 +61,10 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - [ ] **Sync-Status im Header** — kleines Icon (✓ / ⚠) das den letzten Auto-Sync-Status zeigt ohne in die Einstellungen zu müssen
 - [ ] **Background Sync API** — Service-Worker-basierter Sync, der auch funktioniert wenn die App geschlossen ist (Chrome only; graceful degradation)
 
-### Gilden (Feinschliff)
-- [ ] **PDF-Export einer Gilde** — Pflanzenkarten der Mitglieder als Set + optionale Übersichtsseite
-- [ ] **Bulk-Add aus Pflanzenliste** — „Auswahl zur Gilde X hinzufügen"
-- [ ] **Rollen-Vollständigkeits-Indikator** — welche Rollen noch fehlen, auf der Gildenkarte in der Listenansicht
+### Polykulturen (Feinschliff)
+- [ ] **PDF-Export einer Polykultur** — Pflanzenkarten der Mitglieder als Set + optionale Übersichtsseite
+- [ ] **Bulk-Add aus Pflanzenliste** — „Auswahl zur Polykultur X hinzufügen"
+- [ ] **Rollen-Vollständigkeits-Indikator** — welche Rollen noch fehlen, auf der Polykulturenkarte in der Listenansicht
 - [ ] **Inkompatibilitäts-Warnung** — z.B. Walnuss-Allelopathie (Juglone)
 
 ### Baumscheibe-Karte (Feinschliff)
@@ -81,16 +88,16 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - [ ] **Beobachtungs-Tagebuch pro Pflanze** — freie Notizen mit Datum (z.B. „Erstmals geblüht", „Mehltau bemerkt"), gespeichert in IndexedDB
 - [ ] **Foto-Upload pro Eintrag** — eigene Fotos direkt in der App
 
-### Gilden — Kuratiertes Companion-Wissen (Phase 2)
+### Polykulturen — Kuratiertes Companion-Wissen (Phase 2)
 - [ ] **`companions.json` als Golden Master** — bekannte gute Kombinationen aus Standardliteratur (Jacke & Toensmeier, Crawford, Hemenway)
 - [ ] **Vorschläge erweitern** — mechanische Filter + Companion-Datenbank kombiniert
 - [ ] **Pflege-Workflow** für Companion-Daten (PR-Prozess)
 
-### Gilden — Visualisierung (Phase 3)
-- [ ] **Schicht-Diagramm pro Gilde** — Baumkrone → Strauch → Staude → Bodendecker → Wurzel
+### Polykulturen — Visualisierung (Phase 3)
+- [ ] **Schicht-Diagramm pro Polykultur** — Baumkrone → Strauch → Staude → Bodendecker → Wurzel
 - [ ] **Kompatibilitäts-Matrix** als Heatmap (Sonne/Wasser/pH/Allelopathie)
 
-### Gilden — SPARQL (Phase 4, Experiment)
+### Polykulturen — SPARQL (Phase 4, Experiment)
 - [ ] **Wikidata-SPARQL** direkt aus dem Browser — z.B. alle Stickstoff-fixierenden Pflanzen
 - [ ] **Filter-Builder** im Vorschlags-Panel → SPARQL generieren, importieren
 - ⚠ Wikidata-Coverage für ökologische Properties dünn; als Ergänzung, nicht Ersatz
@@ -109,10 +116,10 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 
 ## Langfristig
 
-### Kuratierte Gilden als Community-Layer
-Öffentlich geteilte Gilden (z.B. „Apfelbaum-Gilde nach Crawford") zum Importieren.
+### Kuratierte Polykulturen als Community-Layer
+Öffentlich geteilte Polykulturen (z.B. „Apfelbaum-Polykultur nach Crawford") zum Importieren.
 Erfordert ein Backend oder ein standardisiertes JSON-Schema für den Austausch.
-Mögliche Einstiegspunkte: GitHub-Repository mit kuratierten Gilden-JSONs (PR-Workflow),
+Mögliche Einstiegspunkte: GitHub-Repository mit kuratierten Polykulturen-JSONs (PR-Workflow),
 später optionales Abo-Modell für gepflegte Sammlungen.
 
 ### PocketBase als Server-Backend (Option)
@@ -150,4 +157,4 @@ später optionales Abo-Modell für gepflegte Sammlungen.
 | Netlify-Proxy kein Rate-Limiting | offen |
 | Baumscheibe-SVG-Template 5 MB (inline Base64) | offen — via `svgo` / externe Raster |
 | GitHub Gist: kein Konflikt-Abgleich beim Pull | offen — siehe Kurzfristig Sync |
-| Backup-Restore ignorierte Gilden in allen pull/import-Pfaden | ✅ behoben — `importGuilds()` in `db.ts`, alle vier Restore-Handler in `settings.astro` |
+| Backup-Restore ignorierte Polykulturen in allen pull/import-Pfaden | ✅ behoben — `importGuilds()` in `db.ts`, alle vier Restore-Handler in `settings.astro` |
