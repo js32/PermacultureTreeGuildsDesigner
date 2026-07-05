@@ -55,6 +55,11 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 ### Launch-Blocker
 - [ ] **Impressum füllen** — aktuell Stub; vor öffentlichem Launch nach §5 TMG ergänzen
 - [ ] **Plausible-Domain** — `data-domain` in `Layout.astro` auf Custom-Domain anpassen + im Plausible-Dashboard registrieren
+- [ ] **Lizenz-Metadaten ergänzen** — `pwa/package.json` fehlt `"license": "MIT"`. Optional: Copyright-Hinweis in `LICENSE`/README erweitern, da die PWA inzwischen eine vollständige Neuentwicklung ist (Original von Sebastian Schucht war die PowerShell-Tooling-Basis in `legacy/`); MIT erlaubt das Rewrite ohne Einschränkung, solange die bestehende Attribution erhalten bleibt
+
+### Sicherheit (Launch-Blocker)
+- [ ] **Stored-XSS beim `innerHTML`-Rendering fixen** — `commonName`/`latinName`/`imageUrl` landen ungeescaped in Template-Strings (`index.astro`, `gilden.astro`, `cards.astro`, `settings.astro`); am kritischsten `<img src="${p.imageUrl}">` in `index.astro:700`. Angriffsvektor: präparierter Pflanzendatensatz per JSON-Import/geteiltem Gist/Backup. `escapeHtml()` aus `pdf-export.ts` nach `src/lib/` verschieben und überall beim Rendern von Nutzerdaten verwenden, oder auf `textContent` umstellen wo möglich
+- [ ] **Credentials in Einstellungen maskieren** — WebDAV-Passwort und GitHub-PAT (`sync.ts`/`settings.ts`) liegen als Klartext in `localStorage` *und* offen sichtbar im Settings-Formular. In Kombination mit der XSS-Lücke oben: ein präparierter Datensatz kann beide Secrets direkt exfiltrieren. Kurzfristig zumindest Passwortfelder maskieren (`type="password"`); echte Lösung wäre Secrets serverseitig zu halten (siehe PocketBase-Option unter Langfristig)
 
 ### Sync (Feinschliff)
 - [ ] **Konflikt-Erkennung** — vor dem Pull prüfen ob das Backup auf dem Server neuer ist als lokal; Warnung + Merge-Option statt blindem Überschreiben
@@ -154,7 +159,8 @@ später optionales Abo-Modell für gepflegte Sammlungen.
 | Dark-Mode-Bulk-Substitution (View-Toggle-Buttons) | ✅ behoben |
 | Beispieldaten-Import schlägt auf Deploy fehl | ✅ behoben — Filter-Reset + DB-v3-Upgrade |
 | DB v2 fehlender `plants`-Store | ✅ behoben — v3 idempotente Upgrade-Logik |
-| Netlify-Proxy kein Rate-Limiting | offen |
+| Netlify-Proxy kein Rate-Limiting | offen — zusätzlich: `Access-Control-Allow-Origin: *` erlaubt jeder fremden Seite, die Funktion als kostenlosen Scraping-Relay zu nutzen |
+| Netlify-Proxy: PFAF/NaturaDB-Parsing via Regex auf rohem HTML | offen — bricht lautlos (leere Felder, kein Fehler) sobald sich das Markup der Zielseiten ändert |
 | Baumscheibe-SVG-Template 5 MB (inline Base64) | offen — via `svgo` / externe Raster |
 | GitHub Gist: kein Konflikt-Abgleich beim Pull | offen — siehe Kurzfristig Sync |
 | Backup-Restore ignorierte Polykulturen in allen pull/import-Pfaden | ✅ behoben — `importGuilds()` in `db.ts`, alle vier Restore-Handler in `settings.astro` |
