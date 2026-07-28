@@ -53,6 +53,9 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - [ ] Größen anpassen: 6 Baumscheiben pro Seite, 9cm Durchmesser
 - [ ] zweite Option: Größen entsprechend Baumdurchmesser
 
+### Sprache
+- [ ] Übersetzung auf Englisch
+
 ### Launch-Blocker
 - [ ] **Impressum füllen** — aktuell Stub; vor öffentlichem Launch nach §5 TMG ergänzen
 - [ ] **Plausible-Domain** — `data-domain` in `Layout.astro` auf Custom-Domain anpassen + im Plausible-Dashboard registrieren
